@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
-from .argument import Production, X
+from .production import Production, X
 
 
 class Formula:

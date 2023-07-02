@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 
 
-operators = {'__add__': '+',
-             '__sub__': '-',
-             '__mul__': '*',
-             '__floordiv__': '//',
-             '__div__': '/',
-             '__mod__': '%',
-             '__pow__': '**',
-             '__lshift__': '<<',
-             '__rshift__': '>>',
-             '__and__': '&',
-             '__xor__': '^',
-             '__or__': '|'}
+operators = {
+    '__add__': '+',
+    '__sub__': '-',
+    '__mul__': '*',
+    '__floordiv__': '//',
+    '__truediv__': '/',
+    '__mod__': '%',
+    '__pow__': '**',
+    '__lshift__': '<<',
+    '__rshift__': '>>',
+    '__and__': '&',
+    '__xor__': '^',
+    '__or__': '|'
+}
 
 def take_function_name(func):
     name = func.__name__
@@ -27,30 +29,20 @@ class Production:
         self._exp = exp
 
     def product(self, operator, left, right):
-        if type(right) == Production:
-            return Production(
-                eval(f'lambda x: left._func(x) {operators[operator]} right._func(x)',
-                     {
-                         'operators': operators,
-                          'left': left,
-                          'right': right,
-                          'operator': operator
-                      }
-                     ), 
-                str(left._exp) + operators[operator] + str(right._exp)
-                )
-        else:
-            return Production(
-                eval(f'lambda x: left._func(x) {operators[operator]} right',
-                     {
-                         'operators': operators,
-                          'left': left,
-                          'right': right,
-                          'operator': operator
-                      }
-                     ),
-                str(left._exp) + operators[operator] + str(right)
-                )
+        if type(right) == Production: return Production(
+            eval(f'lambda x: left._func(x) {operators[operator]} right._func(x)',
+                {'operators': operators,
+                'left': left,
+                'right': right,
+                'operator': operator}), 
+            '(' + str(left._exp) + operators[operator] + str(right._exp) + ')')
+        else: return Production(
+            eval(f'lambda x: left._func(x) {operators[operator]} right',
+                {'operators': operators,
+                'left': left,
+                'right': right,
+                'operator': operator}),
+            '(' + str(left._exp) + operators[operator] + str(right) + ')')
 
     @take_function_name
     def __add__(self, other, __name__): return self.product(__name__, self, other)
@@ -65,7 +57,7 @@ class Production:
     def __floordiv__(self, other, __name__): return self.product(__name__, self, other)
 
     @take_function_name
-    def __div__(self, other, __name__): return self.product(__name__, self, other)
+    def __truediv__(self, other, __name__): return self.product(__name__, self, other)
 
     @take_function_name
     def __mod__(self, other, __name__): return self.product(__name__, self, other)

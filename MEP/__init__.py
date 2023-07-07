@@ -6,5 +6,3 @@ from .production import X
 
 
 __version__ = '1.0'
-
-

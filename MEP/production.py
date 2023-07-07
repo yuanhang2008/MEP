@@ -1,27 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-operators = {
-    '__add__': '+',
-    '__sub__': '-',
-    '__mul__': '*',
-    '__floordiv__': '//',
-    '__truediv__': '/',
-    '__mod__': '%',
-    '__pow__': '**',
-    '__lshift__': '<<',
-    '__rshift__': '>>',
-    '__and__': '&',
-    '__xor__': '^',
-    '__or__': '|'
-}
-
-def take_function_name(func):
-    name = func.__name__
-    def wrapper(*args, **kwargs):
-        return func(*args, __name__=name, **kwargs)
-    return wrapper
-
 class Production:
     
     def __init__(self, func, exp):
@@ -29,55 +8,48 @@ class Production:
         self._exp = exp
 
     def product(self, operator, left, right):
+        if right is self and left is not self:
+            return Production(
+            eval(f'lambda x: left {operator} right._func(x)',
+                {'left': left,
+                'right': right}),
+            '(' + str(left) + operator + str(right._exp) + ')')
+
         if type(right) == Production: return Production(
-            eval(f'lambda x: left._func(x) {operators[operator]} right._func(x)',
-                {'operators': operators,
-                'left': left,
-                'right': right,
-                'operator': operator}), 
-            '(' + str(left._exp) + operators[operator] + str(right._exp) + ')')
+            eval(f'lambda x: left._func(x) {operator} right._func(x)',
+                {'left': left,
+                'right': right}), 
+            '(' + str(left._exp) + operator + str(right._exp) + ')')
         else: return Production(
-            eval(f'lambda x: left._func(x) {operators[operator]} right',
-                {'operators': operators,
-                'left': left,
-                'right': right,
-                'operator': operator}),
-            '(' + str(left._exp) + operators[operator] + str(right) + ')')
+            eval(f'lambda x: left._func(x) {operator} right',
+                {'left': left,
+                'right': right}),
+            '(' + str(left._exp) + operator + str(right) + ')')       
 
-    @take_function_name
-    def __add__(self, other, __name__): return self.product(__name__, self, other)
+    def __add__(self, other): return self.product('+', self, other)
+    def __sub__(self, other): return self.product('-', self, other)
+    def __mul__(self, other): return self.product('*', self, other)
+    def __floordiv__(self, other): return self.product('//', self, other)
+    def __truediv__(self, other): return self.product('/', self, other)
+    def __mod__(self, other): return self.product('%', self, other)
+    def __pow__(self, other): return self.product('**', self, other)
+    def __lshift__(self, other): return self.product('<<', self, other)
+    def __rshift__(self, other): return self.product('>>', self, other)
+    def __and__(self, other): return self.product('&', self, other)
+    def __xor__(self, other): return self.product('^', self, other)
 
-    @take_function_name
-    def __sub__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __mul__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __floordiv__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __truediv__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __mod__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __pow__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __lshift__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __rshift__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __and__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __xor__(self, other, __name__): return self.product(__name__, self, other)
-
-    @take_function_name
-    def __or__(self, other, __name__): return self.product(__name__, self, other)
+    def __or__(self, other): return self.product('|', self, other)
+    def __radd__(self, other): return self.product('+', other, self)
+    def __rsub__(self, other): return self.product('-', other, self)
+    def __rmul__(self, other): return self.product('*', other, self)
+    def __rfloordiv__(self, other): return self.product('//', other, self)
+    def __rtruediv__(self, other): return self.product('/', other, self)
+    def __rmod__(self, other): return self.product('%', other, self)
+    def __rpow__(self, other): return self.product('**', other, self)
+    def __rlshift__(self, other): return self.product('<<', other, self)
+    def __rrshift__(self, other): return self.product('>>', other, self)
+    def __rand__(self, other): return self.product('&', other, self)
+    def __rxor__(self, other): return self.product('^', other, self)
+    def __ror__(self, other): return self.product('|', other, self)
 
 X = Production(lambda x: x, 'x')

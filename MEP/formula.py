@@ -6,9 +6,9 @@ from .production import Production
 
 class Formula:
 
-    def __init__(self, expression: Production):
-        self._func = expression._func
-        self._exp = expression._exp
+    def __init__(self, production: Production):
+        self._func = production._func
+        self._exp = production._exp
     
     def substitute(self, arg):
         return Expression(self._func, self._exp, arg)

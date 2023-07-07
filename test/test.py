@@ -34,6 +34,5 @@ class MEPTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    print(Formula(X + 1).substitute(1).value())
     unittest.main()
     

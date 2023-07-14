@@ -1,17 +1,21 @@
 # -*- coding:utf-8 -*-
 
 
-from .production import Production
+from .production import Production, unlock
 
 
 class Formula:
 
     def __init__(self, production: Production):
+        unlock(production)
         self._func = production._func
         self._exp = production._exp
     
-    def substitute(self, arg):
+    def subs(self, arg):
         return Expression(self._func, self._exp, arg)
+    
+    def show(self):
+        pass
 
     def __str__(self):
         return self._exp

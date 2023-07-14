@@ -29,7 +29,7 @@ class MEPTestCase(unittest.TestCase):
         for item in self.CASES:
             for value in enumerate(self.VALUES):
                 formula: Formula = item[0]
-                exp = formula.substitute(value[1])
+                exp = formula.subs(value[1])
                 self.assertEqual(exp.value(), item[1][value[0]])
 
 

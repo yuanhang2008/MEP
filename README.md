@@ -28,7 +28,7 @@ Formula objects are printable and ```__str__``` method is defined.
 Substitute a value to build a new expression.
 
 ```python
->>>exp = f.substitute(2) # an Expression object
+>>>exp = f.subs(2) # an Expression object
 >>>exp.value()
 3
 

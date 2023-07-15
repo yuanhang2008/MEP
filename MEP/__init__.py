@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
 
-from .formula import Formula, showall
-from .draw import Config
+from .formula import Formula
+from.draw import drawer
 from .production import X
 
 

@@ -3,16 +3,8 @@
 
 from .production import Production, unlock
 from typing import Tuple
-from.draw import Drawer, Config, DEFAULT_CONFIG
+from.draw import drawer
 
-
-drawer = Drawer()
-
-def showall():
-    drawer.show()
-
-def set_max(value):
-    drawer.max = value
 
 class Formula:
 
@@ -24,8 +16,8 @@ class Formula:
     def subs(self, arg):
         return Expression(self._func, self._exp, arg)
     
-    def draw_func(self, range_: Tuple, config: Config=DEFAULT_CONFIG):
-        drawer.add_func(self._func, range_, config)
+    def draw_func(self, range_: Tuple):
+        drawer._add_func(self, range_)
 
     def __str__(self):
         return self._exp

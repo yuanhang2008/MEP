@@ -21,7 +21,7 @@ class Config:
             else:
                 raise ValueError(f'{key} is not configurable')
 
-DEFULT_CONFIG = Config()
+DEFAULT_CONFIG = Config()
 
 class Drawer:
 
@@ -29,7 +29,7 @@ class Drawer:
         self.max = max
         self.funcs = []
 
-    def add_func(self, func, range_, config=DEFULT_CONFIG):
+    def add_func(self, func, range_, config=DEFAULT_CONFIG):
         self.check_flow(self.max, len(self.funcs) + 1)
         self.funcs.append((func, range_, config))
 
@@ -37,7 +37,7 @@ class Drawer:
         if max is None:
             return
         if funcs_length > max:
-            raise OverflowError(f'{funcs_length} (more than {max}) items to draw')
+            raise ValueError(f'{funcs_length} (more than {max}) items to draw')
 
     def show(self):
         for func in self.funcs:
@@ -52,5 +52,4 @@ class Drawer:
             linewidth=config.line_width, 
             color=config.line_color, 
             linestyle=config.line_style)
-            print(1)
         plt.show()

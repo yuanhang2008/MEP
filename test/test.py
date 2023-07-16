@@ -34,10 +34,6 @@ class MEPTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    f1 = Formula(X ** 2)
-    f1.draw_func((-100, 100))
-    f2 = Formula(X ** 2 - 10 * X + 5)
-    f2.draw_func((-100, 100))
-    drawer.show()
+    Draw.display()
     unittest.main()
     

@@ -2,7 +2,7 @@
 
 
 from .formula import Formula
-from.draw import drawer
+from.draw import Draw
 from .production import X
 
 

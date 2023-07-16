@@ -43,6 +43,10 @@ class Drawer:
         self.funcs = []
     
     def setmax(self, value):
+        if value <= 0:
+            raise ValueError('maximum value should be greater than 0')
+        if int(value) != value:
+            raise TypeError('maximum value should be an integer')
         self.max = value
         self._check_flow(self.max, len(self.funcs))
 
@@ -71,4 +75,18 @@ class Drawer:
         plt.legend(loc='best')
         plt.show()
 
-drawer = Drawer()
+class Draw:
+
+    _drawer = Drawer()
+
+    @classmethod
+    def display(cls):
+        cls._drawer.show()
+
+    @classmethod
+    def setmax(cls, value):
+        cls._drawer.setmax(value)
+    
+    @classmethod
+    def clear(cls):
+        cls._drawer.funcs.clear()

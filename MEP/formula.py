@@ -3,7 +3,7 @@
 
 from .production import Production, unlock
 from typing import Tuple
-from.draw import drawer
+from.draw import Draw
 
 
 class Formula:
@@ -16,8 +16,8 @@ class Formula:
     def subs(self, arg):
         return Expression(self._func, self._exp, arg)
     
-    def draw_func(self, range_: Tuple):
-        drawer._add_func(self, range_)
+    def draw(self, range_: Tuple):
+        Draw._drawer._add_func(self, range_)
 
     def __str__(self):
         return self._exp

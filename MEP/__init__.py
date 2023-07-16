@@ -6,4 +6,4 @@ from.draw import Draw
 from .production import X
 
 
-__version__ = '1.0'
+__version__ = 'v0.3.0'

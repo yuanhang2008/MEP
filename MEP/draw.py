@@ -68,7 +68,7 @@ class Drawer:
             range_ = func[1]
 
             x = [item for item in range(*range_)]
-            y = [formula._func(arg) for arg in x]
+            y = [formula._func({'x': kwarg}) for kwarg in x]
             
             plt.plot(x, y, color=colors[counter], label=formula._exp)
             counter += 1

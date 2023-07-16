@@ -2,7 +2,7 @@
 
 
 from .production import Production, unlock
-from typing import Tuple
+from typing import Callable, Any
 from.draw import Draw
 
 
@@ -14,13 +14,13 @@ class Formula:
         self._tree = production._tree
         self._exp = self._get_exp(self._tree)
     
-    def subs(self, arg):
-        return Expression(self._func, self._exp, arg)
+    def subs(self, **kwargs):
+        return Expression(self._func, self._exp, kwargs)
     
-    def draw(self, range_: Tuple):
+    def draw(self, range_: tuple):
         Draw._drawer._add_func(self, range_)
     
-    def _get_exp(self, tree, level=0):
+    def _get_exp(self, tree: dict | str, level=0):
         if tree == 'x':
             return tree
         
@@ -48,16 +48,21 @@ class Formula:
 
 class Expression:
 
-    def __init__(self, func, exp, arg):
+    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict):
         self._func = func
         self._exp = exp
-        self._arg = arg
+        self._kwargs = kwargs
 
     def value(self):
-        return self._func(self._arg)
+        return self._func(self._kwargs)
 
     def __str__(self):
-        exp = ''
+        exp: str = ''
         for item in self._exp:
-            exp += str(self._arg) if item == 'x' else item
+            for kwarg in self._kwargs:
+                if item == kwarg:
+                    exp += str(self._kwargs[kwarg])
+                    break
+            else:
+                exp += item
         return exp

@@ -1,30 +1,33 @@
 # -*- coding: utf-8 -*-
 
 
+from typing import Callable
+
+
 def unlock(*args):
     production: Production
     for production in args:
-        if type(production) == Production:
+        if isinstance(production, Production):
             production._locked = False
 
 def product(operator, left, right, level):
     unlock(left, right)
-    if type(right) == Production and type(left) != Production:
+    if isinstance(right, Production) and (not isinstance(left, Production)):
         return Production(
-        eval(f'lambda x: left {operator} right._func(x)',
+        eval(f'lambda kwargs: left {operator} right._func(kwargs)',
             {'left': left,
             'right': right}),
         {'L': left, 'O': operator, 'R': right._tree, 'l': level})
 
-    if type(right) == Production:
+    if isinstance(right, Production):
         return Production(
-        eval(f'lambda x: left._func(x) {operator} right._func(x)',
+        eval(f'lambda kwargs: left._func(kwargs) {operator} right._func(kwargs)',
             {'left': left,
             'right': right}), 
         {'L': left._tree, 'O': operator, 'R': right._tree, 'l': level})
     else:
         return Production(
-        eval(f'lambda x: left._func(x) {operator} right',
+        eval(f'lambda kwargs: left._func(kwargs) {operator} right',
             {'left': left,
             'right': right}),
         {'L': left._tree, 'O': operator, 'R': right, 'l': level})
@@ -33,7 +36,7 @@ class Production:
     
     def __init__(self, func, tree):
         self._locked = True
-        self._func = func
+        self._func: Callable[[dict]] = func
         self._tree: dict | str = tree
 
     def __getattribute__(self, __name: str):
@@ -67,4 +70,7 @@ class Production:
     def __rxor__(self, other): return product('^', other, self, 1)
     def __ror__(self, other): return product('|', other, self, 1)
 
-X = Production(lambda x: x, 'x')
+class Symbol(Production):
+
+    def __init__(self, sign):
+        super().__init__(lambda kwargs: kwargs[sign], sign)

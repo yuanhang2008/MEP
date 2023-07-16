@@ -3,7 +3,12 @@
 
 from .formula import Formula
 from.draw import Draw
-from .production import X
+from .production import Symbol
 
 
-__version__ = 'v0.3.0'
+__version__ = 'v0.4.0'
+
+
+X = Symbol('x')
+Y = Symbol('y')
+Z = Symbol('z')

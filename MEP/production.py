@@ -2,74 +2,69 @@
 
 
 def unlock(*args):
-    if type(args[0]) == list:
-        productions = args[0]
-    else:
-        productions = args
-    
-    for production in productions:
-        production._locked = False
+    production: Production
+    for production in args:
+        if type(production) == Production:
+            production._locked = False
 
-def product(operator, left, right):
+def product(operator, left, right, level):
+    unlock(left, right)
     if type(right) == Production and type(left) != Production:
-        unlock(right)
         return Production(
         eval(f'lambda x: left {operator} right._func(x)',
             {'left': left,
             'right': right}),
-        '(' + str(left) + operator + str(right._exp) + ')')
+        {'L': left, 'O': operator, 'R': right._tree, 'l': level})
 
     if type(right) == Production:
-        unlock(left, right)
         return Production(
         eval(f'lambda x: left._func(x) {operator} right._func(x)',
             {'left': left,
             'right': right}), 
-        '(' + str(left._exp) + operator + str(right._exp) + ')')
+        {'L': left._tree, 'O': operator, 'R': right._tree, 'l': level})
     else:
-        unlock(left)
         return Production(
         eval(f'lambda x: left._func(x) {operator} right',
             {'left': left,
             'right': right}),
-        '(' + str(left._exp) + operator + str(right) + ')') 
+        {'L': left._tree, 'O': operator, 'R': right, 'l': level})
 
 class Production:
     
-    def __init__(self, func, exp):
+    def __init__(self, func, tree):
         self._locked = True
         self._func = func
-        self._exp = exp
+        self._tree: dict | str = tree
 
     def __getattribute__(self, __name: str):
         if super().__getattribute__('_locked'):
             raise AttributeError('cannot access a Production object')
         return super().__getattribute__(__name)
 
-    def __add__(self, other): return product('+', self, other)
-    def __sub__(self, other): return product('-', self, other)
-    def __mul__(self, other): return product('*', self, other)
-    def __floordiv__(self, other): return product('//', self, other)
-    def __truediv__(self, other): return product('/', self, other)
-    def __mod__(self, other): return product('%', self, other)
-    def __pow__(self, other): return product('**', self, other)
-    def __lshift__(self, other): return product('<<', self, other)
-    def __rshift__(self, other): return product('>>', self, other)
-    def __and__(self, other): return product('&', self, other)
-    def __xor__(self, other): return product('^', self, other)
-
-    def __or__(self, other): return product('|', self, other)
-    def __radd__(self, other): return product('+', other, self)
-    def __rsub__(self, other): return product('-', other, self)
-    def __rmul__(self, other): return product('*', other, self)
-    def __rfloordiv__(self, other): return product('//', other, self)
-    def __rtruediv__(self, other): return product('/', other, self)
-    def __rmod__(self, other): return product('%', other, self)
-    def __rpow__(self, other): return product('**', other, self)
-    def __rlshift__(self, other): return product('<<', other, self)
-    def __rrshift__(self, other): return product('>>', other, self)
-    def __rand__(self, other): return product('&', other, self)
-    def __rxor__(self, other): return product('^', other, self)
-    def __ror__(self, other): return product('|', other, self)
+    def __add__(self, other): return product('+', self, other, 4)
+    def __sub__(self, other): return product('-', self, other, 4)
+    def __mul__(self, other): return product('*', self, other, 5)
+    def __floordiv__(self, other): return product('//', self, other, 5)
+    def __truediv__(self, other): return product('/', self, other, 5)
+    def __mod__(self, other): return product('%', self, other, 5)
+    def __pow__(self, other): return product('**', self, other, 6)
+    def __lshift__(self, other): return product('<<', self, other, 3)
+    def __rshift__(self, other): return product('>>', self, other, 3)
+    def __and__(self, other): return product('&', self, other, 2)
+    def __xor__(self, other): return product('^', self, other, 1)
+    def __or__(self, other): return product('|', self, other, 1)
+    
+    def __radd__(self, other): return product('+', other, self, 4)
+    def __rsub__(self, other): return product('-', other, self, 4)
+    def __rmul__(self, other): return product('*', other, self, 5)
+    def __rfloordiv__(self, other): return product('//', other, self, 5)
+    def __rtruediv__(self, other): return product('/', other, self, 5)
+    def __rmod__(self, other): return product('%', other, self, 5)
+    def __rpow__(self, other): return product('**', other, self, 6)
+    def __rlshift__(self, other): return product('<<', other, self, 3)
+    def __rrshift__(self, other): return product('>>', other, self, 3)
+    def __rand__(self, other): return product('&', other, self, 2)
+    def __rxor__(self, other): return product('^', other, self, 1)
+    def __ror__(self, other): return product('|', other, self, 1)
 
 X = Production(lambda x: x, 'x')

@@ -34,6 +34,4 @@ class MEPTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    Draw.display()
     unittest.main()
-    

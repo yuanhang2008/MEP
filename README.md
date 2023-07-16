@@ -19,10 +19,10 @@ Formula objects are printable and ```__str__``` method is defined.
 
 ```python
 >>>print(f)
-((2*x)-1)
+2*x-1
 
 >>>str(f)
-'((2*x)-1)'
+'2*x-1'
 ```
 
 ### Draw
@@ -70,7 +70,7 @@ Substitute a value to build a new expression.
 3
 
 >>>print(exp)
-((2*2)-1)
+2*2-1
 ```
 
 ## Bugs/Requests

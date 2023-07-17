@@ -12,6 +12,7 @@ class Formula:
         unlock(production)
         self._func = production._func
         self._tree = production._tree
+        self._args = production._args
         self._exp = self._get_exp(self._tree)
     
     def subs(self, **kwargs):
@@ -57,7 +58,10 @@ class Formula:
         if parents:
             return ''.join(['(', left, operator, right, ')'])
         return ''.join([left, operator, right])
-
+    
+    def curry(self, **kwargs):
+        pass
+    
     def __str__(self):
         exp: str = ''
         for item in self._exp:

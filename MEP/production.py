@@ -5,6 +5,8 @@ from typing import Callable
 from string import ascii_letters as letters
 
 
+symbols: set = set()
+
 def unlock(*args):
     production: Production
     for production in args:
@@ -18,27 +20,31 @@ def product(operator, left, right, level):
         eval(f'lambda kwargs: left {operator} right._func(kwargs)',
             {'left': left,
             'right': right}),
-        {'L': left, 'O': operator, 'R': right._tree, 'l': level})
+        {'L': left, 'O': operator, 'R': right._tree, 'l': level}, 
+        right._args)
 
     if isinstance(right, Production):
         return Production(
         eval(f'lambda kwargs: left._func(kwargs) {operator} right._func(kwargs)',
             {'left': left,
             'right': right}), 
-        {'L': left._tree, 'O': operator, 'R': right._tree, 'l': level})
+        {'L': left._tree, 'O': operator, 'R': right._tree, 'l': level}, 
+        left._args | right._args)
     else:
         return Production(
         eval(f'lambda kwargs: left._func(kwargs) {operator} right',
             {'left': left,
             'right': right}),
-        {'L': left._tree, 'O': operator, 'R': right, 'l': level})
+        {'L': left._tree, 'O': operator, 'R': right, 'l': level}, 
+        left._args)
 
 class Production:
     
-    def __init__(self, func, tree):
+    def __init__(self, func, tree, arg):
         self._locked = True
         self._func: Callable[[dict]] = func
         self._tree: dict | str = tree
+        self._args: set = arg
 
     def __getattribute__(self, __name: str):
         if super().__getattribute__('_locked'):
@@ -74,10 +80,21 @@ class Production:
 class Symbol(Production):
 
     def __init__(self, sign):
-        if not self._check(sign):
-            raise ValueError(f'{sign} is an invalid sign')
-        super().__init__(lambda kwargs: kwargs[sign], sign)
+        self._locked = True
+        self.sign = sign
+        if not self._check(self.sign):
+            raise ValueError(f'{self.sign} is an invalid sign')
+        if self.sign in symbols:
+            raise ValueError(f'Sign {self.sign} has been used')
+        super().__init__(lambda kwargs: kwargs[self.sign], self.sign, {self.sign})
+        symbols.add(self.sign)
     
-    def _check(sign: str):
+    def __getattribute__(self, __name: str):
+        allow = ['sign', '_check']
+        if __name in allow:
+            return object.__getattribute__(self, __name)
+        return super().__getattribute__(__name)
+    
+    def _check(self, sign: str):
         if len(sign) == 1 and (sign in letters):
             return True

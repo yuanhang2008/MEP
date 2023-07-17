@@ -7,7 +7,7 @@ from .production import Symbol, symbols
 from .math import Math
 
 
-__version__ = '0.5.2'
+__version__ = '0.6.0'
 
 
 X = Symbol('x')

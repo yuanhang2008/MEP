@@ -67,11 +67,16 @@ class Drawer:
             formula = func[0]
             range_ = func[1]
 
+            if len(formula._args) > 1:
+                raise ValueError('cannot display a formula for multiple parameters')
+            arg = list(formula._args)[0]
+
             x = [item for item in range(*range_)]
-            y = [formula._func({'x': kwarg}) for kwarg in x]
+            y = [formula._func({arg: kwarg}) for kwarg in x]
             
             plt.plot(x, y, color=colors[counter], label=formula._exp)
             counter += 1
+        self.funcs.clear()
         plt.legend(loc='best')
         plt.show()
 

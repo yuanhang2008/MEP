@@ -60,8 +60,37 @@ class Formula:
         return ''.join([left, operator, right])
     
     def curry(self, **kwargs):
-        pass
+        args = set(tuple(self._args))
+        tree = self._tree_curry(self._tree, kwargs)
+        for key in kwargs:
+            args.remove(key)
+
+        def wapper(kwargs_):
+            for key in kwargs:
+                kwargs_[key] = kwargs[key]
+            return self._func(kwargs_)
+        
+        return Formula(Production(wapper, tree, args))
     
+    def _tree_curry(self, tree: dict | str, kwargs: dict):
+        if type(tree) == str:
+            if kwargs.get(tree, None):
+                return kwargs[tree]
+            return tree
+
+        if type(tree.get('S', None)) == str:
+            for key, value in tree:
+                if key == 'S': continue
+                if type(value) == str or type(value) == dict:
+                    tree[key] = self._tree_curry(tree[key], kwargs)
+            return tree
+        
+        if type(tree['L']) == str or type(tree['L']) == dict:
+            tree['L'] = self._tree_curry(tree['L'], kwargs)
+        if type(tree['R']) == str or type(tree['R']) == dict:
+            tree['R'] = self._tree_curry(tree['R'], kwargs)
+        return tree
+
     def __str__(self):
         exp: str = ''
         for item in self._exp:

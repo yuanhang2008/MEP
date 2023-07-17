@@ -108,6 +108,19 @@ Class ```Math``` provides with some special functions, which can participate in 
 3
 ```
 
+### curry
+
+```curry``` method can curry a formula and return the curried formula.
+
+```python
+>>>f1 = MEP.Formula(X + Y)
+>>>f2 = f1.curry(x=2)
+>>>exp = f2.subs(y=3)
+
+>>>exp.value
+5
+```
+
 ## Bugs/Requests
 
 Please send bug reports and feature requests through [github issue tracker](https://github.com/yuanhang2008/MEP/issues).

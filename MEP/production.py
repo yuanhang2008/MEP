@@ -40,11 +40,11 @@ def product(operator, left, right, level):
 
 class Production:
     
-    def __init__(self, func, tree, arg):
+    def __init__(self, func, tree, args):
         self._locked = True
         self._func: Callable[[dict]] = func
         self._tree: dict | str = tree
-        self._args: set = arg
+        self._args: set = args
 
     def __getattribute__(self, __name: str):
         if super().__getattribute__('_locked'):

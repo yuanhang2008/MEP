@@ -72,3 +72,11 @@ class Math:
             {'x': (x._tree if isinstance(x, Production) else x), 
             'y': (y.tree if isinstance(y, Production) else y), 
             'S': 'root'})
+    
+    def sqrt(cls, x):
+        unlock(x)
+        if not isinstance(x, Production):
+            return math.sqrt(x)
+        return Production(
+            lambda kwargs: math.sqrt(x._func(kwargs)), 
+            {'x': x._tree, 'S': 'sqrt'})

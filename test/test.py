@@ -34,4 +34,9 @@ class MEPTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    r = Symbol('r')
+    f = Formula(r * Math.root(r, 2))
+    print(f)
+    e = f.subs(r=9)
+    print(e, e.value())
     unittest.main()

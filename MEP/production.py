@@ -2,6 +2,7 @@
 
 
 from typing import Callable
+from string import ascii_letters as letters
 
 
 def unlock(*args):
@@ -73,4 +74,10 @@ class Production:
 class Symbol(Production):
 
     def __init__(self, sign):
+        if not self._check(sign):
+            raise ValueError(f'{sign} is an invalid sign')
         super().__init__(lambda kwargs: kwargs[sign], sign)
+    
+    def _check(sign: str):
+        if len(sign) == 1 and (sign in letters):
+            return True

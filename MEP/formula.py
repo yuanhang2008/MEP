@@ -21,8 +21,17 @@ class Formula:
         Draw._drawer._add_func(self, range_)
     
     def _get_exp(self, tree: dict | str, level=0):
-        if tree == 'x':
+        if type(tree) == str:
             return tree
+        if type(tree) == dict and type(tree.get('S', None)) == str:
+            args = []
+            for item in tree:
+                if item == 'S': continue
+                if type(tree[item]) == dict:
+                    args.append(self._get_exp(tree[item]))
+                else:
+                    args.append(str(tree[item]))
+            return f'{tree["S"]}({"".join([item + ", " for item in args[:-1]] + [args[-1]])})'
         
         parents = False
         if level > tree['l']:

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
-from .production import Production, unlock
+from .production import Production, unlock, relock
 from typing import Callable, Any
 from.draw import Draw
 
@@ -14,9 +14,13 @@ class Formula:
         self._tree = production._tree
         self._args = production._args
         self._exp = self._get_exp(self._tree)
+        relock(production)
     
     def subs(self, **kwargs):
-        return Expression(self._func, self._exp, kwargs)
+        args = {key for key in kwargs}
+        if args != self._args:
+            raise ValueError(f'substitution takes {len(self._args)} arguments, not {args}')
+        return Expression(self._func, self._exp, kwargs, self._args)
     
     def draw(self, range_: tuple):
         Draw._drawer._add_func(self, range_)
@@ -100,10 +104,11 @@ class Formula:
 
 class Expression:
 
-    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict):
-        self._func = func
+    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set):
         self._exp = exp
         self._kwargs = kwargs
+        self._func = func
+        self._args = args
 
     def value(self):
         return self._func(self._kwargs)

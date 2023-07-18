@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import Callable
+from typing import Callable, Any
 from string import ascii_letters as letters
 
 
@@ -13,30 +13,46 @@ def unlock(*args):
         if isinstance(production, Production):
             production._locked = False
 
-def product(operator, left, right, level):
+def relock(*args):
+    production: Production
+    for production in args:
+        if isinstance(production, Production):
+            production._locked = True
+
+def product(operator, left: 'Production | Any', right: 'Production | Any', level):
     unlock(left, right)
+    if isinstance(left, Production):
+        left_func = left._func
+        left_tree = left._tree
+        left_args = left._args
+    if isinstance(right, Production):
+        right_func = right._func
+        right_tree = right._tree
+        right_args = right._args
+    relock(left, right)
+
     if isinstance(right, Production) and (not isinstance(left, Production)):
         return Production(
-        eval(f'lambda kwargs: left {operator} right._func(kwargs)',
+        eval(f'lambda kwargs: left {operator} right_func(kwargs)',
             {'left': left,
-            'right': right}),
-        {'L': left, 'O': operator, 'R': right._tree, 'l': level}, 
-        right._args)
+            'right_func': right_func}),
+        {'L': left, 'O': operator, 'R': right_tree, 'l': level}, 
+        right_args)
 
     if isinstance(right, Production):
         return Production(
-        eval(f'lambda kwargs: left._func(kwargs) {operator} right._func(kwargs)',
-            {'left': left,
-            'right': right}), 
-        {'L': left._tree, 'O': operator, 'R': right._tree, 'l': level}, 
-        left._args | right._args)
+        eval(f'lambda kwargs: left_func(kwargs) {operator} right_func(kwargs)',
+            {'left_func': left_func,
+            'right_func': right_func}), 
+        {'L': left_tree, 'O': operator, 'R': right_tree, 'l': level}, 
+        left_args | right_args)
     else:
         return Production(
-        eval(f'lambda kwargs: left._func(kwargs) {operator} right',
-            {'left': left,
+        eval(f'lambda kwargs: left_func(kwargs) {operator} right',
+            {'left_func': left_func,
             'right': right}),
-        {'L': left._tree, 'O': operator, 'R': right, 'l': level}, 
-        left._args)
+        {'L': left_tree, 'O': operator, 'R': right, 'l': level}, 
+        left_args)
 
 class Production:
     

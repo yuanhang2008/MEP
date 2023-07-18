@@ -2,141 +2,52 @@
 
 
 import math
+from string import ascii_lowercase as letters
+from typing import Any, Callable
+
 from .production import *
 
 
+def newfunc(func: Callable, name: str):
+    def wrapper(*args: Production | Any):
+        funcs = {}
+        trees = {}
+        args_ = set()
+        unlock(*args)
+        for arg in args:
+            if isinstance(arg, Production):
+                funcs[arg] = arg._func
+                trees[arg] = arg._tree
+                args_ = args_ | arg._args
+        relock(*args)
+
+        if not any([isinstance(arg, Production) for arg in args]):
+            return func(*args)
+        return Production(lambda kwargs: func(
+            *[(funcs[arg](kwargs) if isinstance(arg, Production) else arg) for arg in args]),
+            dict((('S', name),) + tuple(
+                [(letters[index], trees[arg] if isinstance(arg, Production) else arg)
+                 for index, arg in enumerate(args)])),
+            args_)
+
+    return wrapper
+
+def root(x, y=2):
+    if y == 0:
+        return 1
+    if y == 1:
+        return x
+    if x >= 0 and y == 2:
+        return math.sqrt(x)
+    return x ** (1 / y)
+
 class Math:
 
-    @classmethod
-    def abs(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-
-        if not isinstance(x, Production):
-            return abs(x)
-        return Production(
-            lambda kwargs: abs(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'abs'}, 
-            x_args)
-    
-    @classmethod
-    def round(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return round(x)
-        return Production(
-            lambda kwargs: round(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'round'}, 
-            x_args)
-    
-    @classmethod
-    def ceil(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return math.ceil(x)
-        return Production(
-            lambda kwargs: math.ceil(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'ceil'}, 
-            x_args)
-    
-    @classmethod
-    def floor(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return math.floor(x)
-        return Production(
-            lambda kwargs: math.floor(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'floor'}, 
-            x_args)
-    
-    @classmethod
-    def int(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return int(x)
-        return Production(
-            lambda kwargs: int(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'int'}, 
-            x_args)
-    
-    @classmethod
-    def round(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return round(x)
-        return Production(
-            lambda kwargs: round(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'round'}, 
-            x_args)
-    
-    @classmethod
-    def root(cls, x, y):
-        unlock(x, y)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        if isinstance(y, Production):
-            y_func = y._func
-            y_tree = y._tree
-            y_args = y._args
-        relock(x, y)
-
-        if not (isinstance(x, Production) or isinstance(y, Production)):
-            return x ** (1 / y)
-        return Production(
-            lambda kwargs: (x_func(kwargs) if isinstance(x, Production) else x) ** 
-                (1 / (y_func(kwargs) if isinstance(y, Production) else y)), 
-            {'x': (x_tree if isinstance(x, Production) else x), 
-            'y': (y_tree if isinstance(y, Production) else y), 
-            'S': 'root'}, 
-            x_args | y_args)
-    
-    def sqrt(cls, x):
-        unlock(x)
-        if isinstance(x, Production):
-            x_func = x._func
-            x_tree = x._tree
-            x_args = x._args
-        relock(x)
-        
-        if not isinstance(x, Production):
-            return math.sqrt(x)
-        return Production(
-            lambda kwargs: math.sqrt(x_func(kwargs)), 
-            {'x': x_tree, 'S': 'sqrt'}, 
-            x_args)
+    abs = newfunc(math.fabs, 'abs')
+    root = newfunc(root, 'root')
+    round = newfunc(round, 'round')
+    ceil = newfunc(math.ceil, 'ceil')
+    floor = newfunc(math.floor, 'floor')
+    int = newfunc(int, 'int')
+    sqrt = newfunc(root, 'sqrt')
+    factorial = newfunc(math.factorial, 'factorial')

@@ -1,8 +1,10 @@
 # -*- coding:utf-8 -*-
 
 
-from .production import Production, unlock, relock
-from typing import Callable, Any
+from typing import Any, Callable
+
+from .production import Production, relock, unlock
+
 from.draw import Draw
 
 
@@ -10,9 +12,14 @@ class Formula:
 
     def __init__(self, production: Production):
         unlock(production)
-        self._func = production._func
-        self._tree = production._tree
-        self._args = production._args
+        if not isinstance(production, Production):
+            self._func = lambda kwargs: production
+            self._tree = production
+            self._args = set()
+        else:
+            self._func = production._func
+            self._tree = production._tree
+            self._args = production._args
         self._exp = self._get_exp(self._tree)
         relock(production)
     
@@ -26,6 +33,9 @@ class Formula:
         Draw._drawer._add_func(self, range_)
 
     def _get_exp(self, tree: dict | str, level=0):
+        if type(tree) != dict and type(tree) != str:
+            print('qwe')
+            return str(tree)
         if type(tree) == str:
             return '$' + tree
         if type(tree) == dict and type(tree.get('S', None)) == str:
@@ -46,7 +56,7 @@ class Formula:
             if type(tree['L']) == str:
                 left = '$' + tree['L']
             else:
-                left = str(tree['L'])
+                left = str(tree['L']) if tree['L'] >= 0 else ('(' + str(tree['L']) + ')')
         else:
             left = self._get_exp(tree['L'], tree['l'])
         
@@ -54,7 +64,7 @@ class Formula:
             if type(tree['R']) == str:
                 right = '$' + tree['R']
             else:
-                right = str(tree['R'])
+                right = str(tree['R']) if tree['R'] >= 0 else ('(' + str(tree['R']) + ')')
         else:
             right = self._get_exp(tree['R'], tree['l'])
         
@@ -78,12 +88,12 @@ class Formula:
     
     def _tree_curry(self, tree: dict | str, kwargs: dict):
         if type(tree) == str:
-            if kwargs.get(tree, None):
+            if kwargs.get(tree, None) is not None:
                 return kwargs[tree]
             return tree
 
         if type(tree.get('S', None)) == str:
-            for key, value in tree:
+            for key, value in tree.items():
                 if key == 'S': continue
                 if type(value) == str or type(value) == dict:
                     tree[key] = self._tree_curry(tree[key], kwargs)
@@ -118,7 +128,7 @@ class Expression:
         exp: str = ''
         for item in self._exp:
             if flag:
-                exp += str(self._kwargs[item])
+                exp += str(self._kwargs[item]) if self._kwargs[item] >= 0 else ('(' + str(self._kwargs[item]) + ')')
                 flag = False
                 continue
             if item == '$':

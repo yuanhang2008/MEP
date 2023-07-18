@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-from typing import Callable, Any
 from string import ascii_letters as letters
-
+from typing import Any, Callable
 
 symbols: set = set()
 

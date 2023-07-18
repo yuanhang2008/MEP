@@ -2,10 +2,10 @@
 
 
 from .formula import Formula
-from.draw import Draw
-from .production import Symbol, symbols
-from .math import Math
 
+from.draw import Draw
+from .math import Math
+from .production import Symbol, symbols
 
 __version__ = '0.6.0'
 

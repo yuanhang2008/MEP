@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-import matplotlib.pyplot as plt
 import random as rd
 
+import matplotlib.pyplot as plt
 
 COLOR = {
     '#000000', '#000088','#0000ff', '#008800', '#008888', '#0088ff', '#00ff00', '#00ff88', '#00ffff', 

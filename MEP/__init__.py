@@ -7,7 +7,7 @@ from.draw import Draw
 from .math import Math
 from .production import Symbol, symbols
 
-__version__ = '0.6.2'
+__version__ = '0.7.0'
 
 
 X = Symbol('x')

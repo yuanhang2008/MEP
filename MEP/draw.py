@@ -42,7 +42,7 @@ class Drawer:
         self.max = max
         self.funcs = []
     
-    def setmax(self, value):
+    def _setmax(self, value):
         if value <= 0:
             raise ValueError('maximum value should be greater than 0')
         if int(value) != value:
@@ -60,7 +60,7 @@ class Drawer:
         if funcs_length > max:
             raise ValueError(f'{funcs_length} (more than {max}) items to draw')
 
-    def show(self):
+    def _show(self):
         colors = color(len(self.funcs))
         counter = 0
         for func in self.funcs:
@@ -74,7 +74,7 @@ class Drawer:
             x = [item for item in range(*range_)]
             y = [formula._func({arg: kwarg}) for kwarg in x]
             
-            plt.plot(x, y, color=colors[counter], label=formula._exp)
+            plt.plot(x, y, color=colors[counter], label=str(formula))
             counter += 1
         self.funcs.clear()
         plt.legend(loc='best')
@@ -86,11 +86,11 @@ class Draw:
 
     @classmethod
     def display(cls):
-        cls._drawer.show()
+        cls._drawer._show()
 
     @classmethod
     def setmax(cls, value):
-        cls._drawer.setmax(value)
+        cls._drawer._setmax(value)
     
     @classmethod
     def clear(cls):

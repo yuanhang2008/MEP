@@ -2,7 +2,7 @@
 
 ## install
 
-Run ```auto_install.bat``` to install MEP.
+Run ```auto_install1.bat``` to install MEP, if it doesn't work, try ```auto_install1.bat```, please.
 
 ## usage
 

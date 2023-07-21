@@ -32,9 +32,12 @@ class Formula:
     def draw(self, range_: tuple):
         Draw._drawer._add_func(self, range_)
 
-    def _get_exp(self, tree: dict | str, level=0):
+    def _get_exp(self, tree: dict | str | Any, level=0):
+        # this method is like a piece of s**t
         if type(tree) != dict and type(tree) != str:
-            print('qwe')
+            if type(tree) == complex and tree.imag == 0:
+                print(tree, tree.real)
+                return str(tree.real)
             return str(tree)
         if type(tree) == str:
             return '$' + tree
@@ -53,10 +56,11 @@ class Formula:
             parents = True
 
         if type(tree['L']) != dict:
-            if type(tree['L']) == str:
-                left = '$' + tree['L']
+            if type(tree['L']) == str: # it should use match-cases
+                left = '$' + tree['L'] # instead of nested if-elses
             else:
-                left = str(tree['L']) if tree['L'] >= 0 else ('(' + str(tree['L']) + ')')
+                k = type(tree['L']) != complex and tree['L'] < 0
+                left = ('(' + str(tree['L']) + ')') if k else str(tree['L'])
         else:
             left = self._get_exp(tree['L'], tree['l'])
         
@@ -64,7 +68,8 @@ class Formula:
             if type(tree['R']) == str:
                 right = '$' + tree['R']
             else:
-                right = str(tree['R']) if tree['R'] >= 0 else ('(' + str(tree['R']) + ')')
+                k = type(tree['R']) != complex and tree['R'] < 0
+                right = ('(' + str(tree['R']) + ')') if k else str(tree['R'])
         else:
             right = self._get_exp(tree['R'], tree['l'])
         
@@ -121,14 +126,18 @@ class Expression:
         self._args = args
 
     def value(self):
-        return self._func(self._kwargs)
+        result = self._func(self._kwargs)
+        if type(result) == complex and result.imag == 0:
+            result = result.real
+        return result
 
     def __str__(self):
         flag = False
         exp: str = ''
         for item in self._exp:
             if flag:
-                exp += str(self._kwargs[item]) if self._kwargs[item] >= 0 else ('(' + str(self._kwargs[item]) + ')')
+                k = type(self._kwargs[item]) != complex and self._kwargs[item] < 0
+                exp += ('(' + str(self._kwargs[item]) + ')') if k else str(self._kwargs[item])
                 flag = False
                 continue
             if item == '$':

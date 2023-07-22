@@ -39,44 +39,65 @@ def color(num: int):
 class Drawer:
 
     def __init__(self, max: int | None=None):
-        self.max = max
-        self.funcs = []
+        self._max = max
+        self._precision = 640
+        self._funcs = []
     
     def _setmax(self, value):
         if value <= 0:
             raise ValueError('maximum value should be greater than 0')
         if int(value) != value:
             raise TypeError('maximum value should be an integer')
-        self.max = value
-        self._check_flow(self.max, len(self.funcs))
+        self._max = value
+        self._check_flow(self._max, len(self._funcs))
+    
+    def _setprec(self, value):
+        if type(value) != int:
+            raise ValueError(f'precision must be int, not {type(value).__name__}')
+        self._precision = value
 
     def _add_func(self, formula, range_):
-        self._check_flow(self.max, len(self.funcs) + 1)
-        self.funcs.append((formula, range_))
+        self._check_flow(self._max, len(self._funcs) + 1)
+        self._funcs.append((formula, range_))
 
     def _check_flow(self, max, funcs_length) -> None:
         if max is None:
             return
         if funcs_length > max:
             raise ValueError(f'{funcs_length} (more than {max}) items to draw')
+    
+    def _get(self, func, arg, num_1, num_2):
+        max, min = num_1, num_2
+        if num_1 < num_2: 
+            max, min = min, max
+        range_ = abs(max - min)
+        cache = min
+        added = range_ / self._precision
+        x = [cache]
+        y = [func({arg: cache})]
+        for _ in range(self._precision):
+            cache += added
+            x.append(cache)
+        if cache != max:
+            x.append(max)
+        y = [func({arg: kwarg}) for kwarg in x]
+        return x, y
 
     def _show(self):
-        colors = color(len(self.funcs))
+        colors = color(len(self._funcs))
         counter = 0
-        for func in self.funcs:
+        for func in self._funcs:
             formula = func[0]
             range_ = func[1]
 
             if len(formula._args) > 1:
                 raise ValueError('cannot display a formula for multiple parameters')
             arg = list(formula._args)[0]
-
-            x = [item for item in range(*range_)]
-            y = [formula._func({arg: kwarg}) for kwarg in x]
+            x, y = self._get(formula._func, arg, *range_)
             
             plt.plot(x, y, color=colors[counter], label=str(formula))
             counter += 1
-        self.funcs.clear()
+        self._funcs.clear()
         plt.legend(loc='best')
         plt.show()
 
@@ -93,5 +114,9 @@ class Draw:
         cls._drawer._setmax(value)
     
     @classmethod
+    def setprec(cls, value):
+        cls._drawer._setprec(value)
+    
+    @classmethod
     def clear(cls):
-        cls._drawer.funcs.clear()
+        cls._drawer._funcs.clear()

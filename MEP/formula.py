@@ -3,7 +3,7 @@
 
 from typing import Any, Callable
 
-from .production import Production, relock, unlock
+from .production import Production, make_real, relock, unlock
 
 from.draw import Draw
 
@@ -35,10 +35,7 @@ class Formula:
     def _get_exp(self, tree: dict | str | Any, level=0):
         # this method is like a piece of s**t
         if type(tree) != dict and type(tree) != str:
-            if type(tree) == complex and tree.imag == 0:
-                print(tree, tree.real)
-                return str(tree.real)
-            return str(tree)
+            return str(make_real(tree))
         if type(tree) == str:
             return '$' + tree
         if type(tree) == dict and type(tree.get('S', None)) == str:
@@ -126,10 +123,7 @@ class Expression:
         self._args = args
 
     def value(self):
-        result = self._func(self._kwargs)
-        if type(result) == complex and result.imag == 0:
-            result = result.real
-        return result
+        return make_real(self._func(self._kwargs))
 
     def __str__(self):
         flag = False

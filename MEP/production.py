@@ -18,12 +18,17 @@ def relock(*args):
         if isinstance(production, Production):
             production._locked = True
 
+def make_real(complex_: complex | Any):
+    if type(complex_) == complex and complex_.imag == 0:
+        return complex_.real
+    else: 
+        return complex_
+
 def make_tree(tree: Dict[str, complex | Any] | Any):
         if type(tree) != dict:
             return tree
         for item in tree:
-            if type(tree[item]) == complex and tree[item].imag == 0:
-                tree[item] = tree[item].real
+            tree[item] = make_real(tree[item])
         return tree
 
 def product(operator, left: 'Production | Any', right: 'Production | Any', level):
@@ -32,14 +37,10 @@ def product(operator, left: 'Production | Any', right: 'Production | Any', level
         left_func = left._func
         left_tree = left._tree
         left_args = left._args
-    elif type(left) == complex and left.imag == 0:
-        left = left.real
     if isinstance(right, Production):
         right_func = right._func
         right_tree = right._tree
         right_args = right._args
-    elif type(right) == complex and right.imag == 0:
-        right = right.real
     relock(left, right)
 
     if isinstance(right, Production) and (not isinstance(left, Production)):

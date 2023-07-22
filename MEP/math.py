@@ -7,7 +7,7 @@ import random
 from string import ascii_lowercase as letters
 from typing import Any, Callable
 
-from .production import *
+from MEP.production import *
 
 
 def newfunc(func: Callable, name: str):
@@ -81,6 +81,14 @@ def float_(x):
         return x.real
     return float(x)
 
+def conditions(*args):
+    if len(args) % 2 != 1:
+        raise ValueError('bad value was given')
+    for index, item in enumerate(args):
+        if index % 2 == 1 and bool(item):
+            return args[index - 1]
+    return args[-1]
+
 class Math:
 
     # basic
@@ -117,8 +125,8 @@ class Math:
     hypot = newfunc(lambda *args: cmath.sqrt(sum((x ** 2 for x in args))), 'hypot')
 
     # angle
-    degrees = newfunc(math.degrees, 'degrees') # dose't support complex numbers
-    radians = newfunc(math.radians, 'radians')
+    degrees = newfunc(lambda x: cmath.pi / 180 * x, 'degrees')
+    radians = newfunc(lambda x: 180 / cmath.pi * x, 'radians')
 
     # hyperbolic
     sinh = newfunc(cmath.sinh, 'sinh')
@@ -141,6 +149,14 @@ class Math:
     phase = newfunc(cmath.phase, 'phase')
     modulus = newfunc(lambda x: cmath.polar(x)[0], 'modulus')
     rect = newfunc(cmath.rect, 'rect')
+
+    # logic
+    bool = newfunc(bool, 'bool')
+    logicand = newfunc(lambda *args: all(map(bool, args)), 'and')
+    logicor = newfunc(lambda *args: any(map(bool, args)), 'or')
+    logicnot = newfunc(lambda x: not bool(x), 'not')
+    logicxor = newfunc(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
+    conditions = newfunc(conditions, 'if')
 
     @classmethod
     def define(cls, func, name):

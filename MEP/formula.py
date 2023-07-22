@@ -19,7 +19,7 @@ class Formula:
         else:
             self._func = production._func
             self._tree = production._tree
-            self._args = production._args
+            self._args = set(sorted(list(production._args)))
         self._exp = self._get_exp(self._tree)
         relock(production)
     
@@ -106,13 +106,16 @@ class Formula:
         if type(tree['R']) == str or type(tree['R']) == dict:
             tree['R'] = self._tree_curry(tree['R'], kwargs)
         return tree
-
-    def __str__(self):
+    
+    def text(self):
         exp: str = ''
         for item in self._exp:
             if item != '$':
                 exp += item
         return exp
+
+    def __str__(self):
+        return f'<Formula f({"".join([arg + ", " for arg in self._args])[:-2]})={self.text()}>'
 
 class Expression:
 
@@ -125,7 +128,7 @@ class Expression:
     def value(self):
         return make_real(self._func(self._kwargs))
 
-    def __str__(self):
+    def text(self):
         flag = False
         exp: str = ''
         for item in self._exp:
@@ -139,3 +142,7 @@ class Expression:
                 continue
             exp += item
         return exp
+
+    def __str__(self):
+        fargs = [f'{key}={self._kwargs[key]}, ' for key in self._kwargs]
+        return f'<Expression f({"".join(fargs)[:-2]})={self.text()}>'

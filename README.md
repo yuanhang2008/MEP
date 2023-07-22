@@ -15,13 +15,14 @@ Use ```MEP.Formula``` and ```MEP.X``` to product a formula.
 >>>f = MEP.Formula(2 * MEP.X - 1)
 ```
 
-Formula objects are printable and ```__str__``` method is defined.
+Formula objects are printable and ```__str__``` method is defined, but ```text``` method is recommended.
 
 ```python
 >>>print(f)
-2*x-1
-
+<Formula f(x)=2*x-1>
 >>>str(f)
+'<Formula f(x)=2*x-1>'
+>>>f.text()
 '2*x-1'
 ```
 
@@ -81,6 +82,8 @@ more functions, such as ```clear```: clear all the formulas in Draw object.
 # Nothing to show
 ```
 
+```setprec```: set the precision of the plot. the larger the precision, the more detailed the plot, but the slower the program runs.
+
 However, drawing a formula contains multiple symbols is invalid.
 
 ### expression
@@ -94,7 +97,9 @@ Substitute a value to build a new expression.The substituted values should corre
 3
 
 >>>print(exp)
-2*2-1
+<Expression f(x=2)=2*2-1>
+>>>exp.text()
+'2*2-1'
 ```
 
 ### math

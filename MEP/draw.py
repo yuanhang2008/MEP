@@ -94,7 +94,7 @@ class Drawer:
                 raise ValueError('cannot display a formula for multiple parameters')
             arg = list(formula._args)[0]
             x, y = self._get(formula._func, arg, *range_)
-            
+
             plt.plot(x, y, color=colors[counter], label=str(formula))
             counter += 1
         self._funcs.clear()

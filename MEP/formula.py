@@ -3,7 +3,7 @@
 
 from typing import Any, Callable
 
-from .production import Production, make_real, relock, unlock
+from .production import Production, relock, unlock
 
 from.draw import Draw
 
@@ -33,12 +33,11 @@ class Formula:
         Draw._drawer._add_func(self, range_)
 
     def _get_exp(self, tree: dict | str | Any, level=0):
-        # this method is like a piece of s**t
-        if type(tree) != dict and type(tree) != str:
-            return str(make_real(tree))
-        if type(tree) == str:
+        if type(tree) != dict and type(tree) != str: # number, bool
+            return str(tree)
+        if type(tree) == str: # symbol
             return '$' + tree
-        if type(tree) == dict and type(tree.get('S', None)) == str:
+        if type(tree) == dict and type(tree.get('S', None)) == str: # dict, Sabc
             args = []
             for item in tree:
                 if item == 'S': continue
@@ -47,14 +46,17 @@ class Formula:
                 else:
                     args.append(('$' + tree[item]) if type(tree[item]) == str else str(tree[item]))
             return f'{tree["S"]}({"".join([item + ", " for item in args[:-1]] + [args[-1]])})'
+
+        if type(tree) == dict and tree.get('V', None) is not None: # dict, OVl
+            return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
         
-        parents = False
+        parents = False # dict, LORl
         if level > tree['l']:
             parents = True
 
         if type(tree['L']) != dict:
-            if type(tree['L']) == str: # it should use match-cases
-                left = '$' + tree['L'] # instead of nested if-elses
+            if type(tree['L']) == str:
+                left = '$' + tree['L']
             else:
                 k = type(tree['L']) != complex and tree['L'] < 0
                 left = ('(' + str(tree['L']) + ')') if k else str(tree['L'])
@@ -75,6 +77,48 @@ class Formula:
             return ''.join(['(', left, operator, right, ')'])
         return ''.join([left, operator, right])
     
+    def _get_exp(self, tree: dict | str | Any, level=0):
+        tree_type = self._get_tree_type(tree)
+        match tree_type:
+            case 'n||b':
+                return str(tree)
+            case 'str':
+                return '$' + tree
+            case 'S*':
+                return self._get_func_tree(tree)
+            case 'OVl':
+                return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
+            case 'LORl':
+                return self._get_lor_tree(tree, level)
+    
+    def _get_tree_type(self, tree):
+        if type(tree) == int or type(tree) == float or \
+        type(tree) == complex or type(tree) == bool: return 'n||b'
+
+        if type(tree) == str: return 'str'
+
+        if type(tree) == dict:
+            if tree.get('S', None) is not None: return 'S*'
+            if tree.get('V', None) is not None: return 'OVl'
+            if tree.get('L', None) is not None: return 'LORl'
+        
+        raise ValueError(f'bad tree {tree} was given')
+
+    def _get_func_tree(self, tree):
+        args = []
+        for item in tree:
+            if item == 'S': continue
+            args.append(self._get_exp(tree[item]))
+        return f'{tree["S"]}({"".join([item + ", " for item in args[:-1]] + [args[-1]])})'
+
+    def _get_lor_tree(self, tree, level):
+        parents = True if level > tree['l'] else False
+        lr_result = {}
+        for item in ['L', 'R']:
+            lr_result[item] = self._get_exp(tree[item])
+        l_bracket, r_bracket = ('(', ')') if parents else ('', '')
+        return ''.join([l_bracket, lr_result['L'], tree['O'], lr_result['R'], r_bracket])
+
     def curry(self, **kwargs):
         args = set(tuple(self._args))
         tree = self._tree_curry(self._tree, kwargs)
@@ -126,7 +170,7 @@ class Expression:
         self._args = args
 
     def value(self):
-        return make_real(self._func(self._kwargs))
+        return self._func(self._kwargs)
 
     def text(self):
         flag = False

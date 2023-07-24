@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
+import math
 from string import ascii_letters as letters
-from typing import Any, Callable, Dict
+from typing import Any, Callable
+
 
 symbols: set = set()
 
@@ -18,60 +20,131 @@ def relock(*args):
         if isinstance(production, Production):
             production._locked = True
 
-def make_real(complex_: complex | Any):
-    if type(complex_) == complex and complex_.imag == 0:
-        return complex_.real
-    else: 
-        return complex_
+def get(value: 'Production'):
+    unlock(value)
+    func = value._func
+    tree = value._tree
+    args = value._args
+    relock(value)
+    return func, tree, args
 
-def make_tree(tree: Dict[str, complex | Any] | Any):
-        if type(tree) != dict:
-            return tree
-        for item in tree:
-            tree[item] = make_real(tree[item])
-        return tree
+class Productor:
+    
+    @classmethod
+    def product(cls, operator, 
+        value1: 'Production | Any', 
+        value2: 'Production | None | Any'=None, 
+        level: int | None=None, 
+        mod: str=''):
 
-def product(operator, left: 'Production | Any', right: 'Production | Any', level):
-    unlock(left, right)
-    if isinstance(left, Production):
-        left_func = left._func
-        left_tree = left._tree
-        left_args = left._args
-    if isinstance(right, Production):
-        right_func = right._func
-        right_tree = right._tree
-        right_args = right._args
-    relock(left, right)
-
-    if isinstance(right, Production) and (not isinstance(left, Production)):
+        match mod:
+            case '1e':
+                return cls.product1e(operator, value1, level)
+            case '2e':
+                is_pordutions = [isinstance(value1, Production), isinstance(value2, Production)]
+                return cls.product2e(operator, value1, value2, is_pordutions, level)
+            case 'f1e':
+                return cls.productfunc1e(operator, value1)
+            case 'f2e':
+                is_pordutions = [isinstance(value1, Production), isinstance(value2, Production)]
+                return cls.productfunc2e(operator, value1, value2, is_pordutions)
+            case modstr:
+                raise ValueError(f'bad mod {modstr} was given')
+    
+    @classmethod
+    def productfunc1e(cls, func_name, value):
+        func, tree, args = get(value)
+        if func_name[:5] == 'math.':
+            short_name = func_name[5:]
+        else:
+            short_name = func_name
         return Production(
-        eval(f'lambda kwargs: left {operator} right_func(kwargs)',
-            {'left': left,
-            'right_func': right_func}),
-        {'L': left, 'O': operator, 'R': right_tree, 'l': level}, 
-        right_args)
+            eval(f'lambda kwargs: {func_name}(func(kwargs))', 
+                {'math': math, 
+                'func': func}), 
+                {'S': short_name, 'a': tree}, 
+                args)
 
-    if isinstance(right, Production):
+    @classmethod
+    def productfunc2e(cls, func_name, value1, value2, is_productions):
+        if func_name[:5] == 'math.':
+            short_name = func_name[5:]
+        else:
+            short_name = func_name
+        if (not is_productions[0]) and is_productions[1]:
+            func, tree, args = get(value2)
+            return Production(
+                eval(f'lambda kwargs: {func_name}(value1, func(kwargs))',
+                    {'math': math, 
+                     'value1': value1, 
+                    'func': func}), 
+                {'S': short_name, 'a': value1, 'b': tree},
+                args)
+
+        if is_productions[1]:
+            func1, tree1, args1 = get(value1)
+            func2, tree2, args2 = get(value2)
+            return Production(
+                eval(f'lambda kwargs: {func_name}(func1(kwargs), func2(kwargs))',
+                    {'math': math, 
+                     'func1': func1, 
+                     'func2': func2}), 
+                {'S': short_name, 'a': tree1, 'b': tree2}, 
+                args1 | args2)
+        else:
+            func, tree, args = get(value1)
+            return Production(
+                eval(f'lambda kwargs: {func_name}(func(kwargs), value2)',
+                    {'math': math, 
+                     'value2': value2, 
+                     'func': func}),
+                {'S': short_name, 'a': tree, 'b': value2}, 
+                args)
+    
+    @classmethod
+    def product1e(cls, operator, value, level):
+        func, tree, args = get(value)
         return Production(
-        eval(f'lambda kwargs: left_func(kwargs) {operator} right_func(kwargs)',
-            {'left_func': left_func,
-            'right_func': right_func}), 
-        {'L': left_tree, 'O': operator, 'R': right_tree, 'l': level}, 
-        left_args | right_args)
-    else:
-        return Production(
-        eval(f'lambda kwargs: left_func(kwargs) {operator} right',
-            {'left_func': left_func,
-            'right': right}),
-        {'L': left_tree, 'O': operator, 'R': right, 'l': level}, 
-        left_args)
+            eval(f'lambda kwargs: {operator}func(kwargs)', 
+                {'func': func}), 
+                {'O': operator, 'V': tree, 'l': level}, 
+                args)
+
+    @classmethod
+    def product2e(cls, operator, left, right, is_productions, level):
+        if (not is_productions[0]) and is_productions[1]:
+            func, tree, args = get(right)
+            return Production(
+                eval(f'lambda kwargs: left {operator} func(kwargs)',
+                    {'left': left,
+                    'func': func}),
+                {'L': left, 'O': operator, 'R': tree, 'l': level}, 
+                args)
+
+        if is_productions[1]:
+            lfunc, ltree, largs = get(left)
+            rfunc, rtree, rargs = get(right)
+            return Production(
+                eval(f'lambda kwargs: lfunc(kwargs) {operator} rfunc(kwargs)',
+                    {'lfunc': lfunc,
+                    'rfunc': rfunc}), 
+                {'L': ltree, 'O': operator, 'R': rtree, 'l': level}, 
+                largs | rargs)
+        else:
+            func, tree, args = get(left)
+            return Production(
+                eval(f'lambda kwargs: func(kwargs) {operator} right',
+                    {'func': func,
+                    'right': right}),
+                {'L': tree, 'O': operator, 'R': right, 'l': level}, 
+                args)
 
 class Production:
     
     def __init__(self, func, tree, args):
         self._locked = True
         self._func: Callable[[dict]] = func
-        self._tree: dict | str | Any = make_tree(tree)
+        self._tree: dict | str | Any = tree
         self._args: set = args
 
     def __getattribute__(self, __name: str):
@@ -79,32 +152,48 @@ class Production:
         if super().__getattribute__('_locked') and (__name not in allows):
             raise AttributeError('cannot access a Production object')
         return super().__getattribute__(__name)
-
-    def __add__(self, other): return product('+', self, other, 4)
-    def __sub__(self, other): return product('-', self, other, 4)
-    def __mul__(self, other): return product('*', self, other, 5)
-    def __floordiv__(self, other): return product('//', self, other, 5)
-    def __truediv__(self, other): return product('/', self, other, 5)
-    def __mod__(self, other): return product('%', self, other, 5)
-    def __pow__(self, other): return product('**', self, other, 6)
-    def __lshift__(self, other): return product('<<', self, other, 3)
-    def __rshift__(self, other): return product('>>', self, other, 3)
-    def __and__(self, other): return product('&', self, other, 2)
-    def __xor__(self, other): return product('^', self, other, 1)
-    def __or__(self, other): return product('|', self, other, 1)
     
-    def __radd__(self, other): return product('+', other, self, 4)
-    def __rsub__(self, other): return product('-', other, self, 4)
-    def __rmul__(self, other): return product('*', other, self, 5)
-    def __rfloordiv__(self, other): return product('//', other, self, 5)
-    def __rtruediv__(self, other): return product('/', other, self, 5)
-    def __rmod__(self, other): return product('%', other, self, 5)
-    def __rpow__(self, other): return product('**', other, self, 6)
-    def __rlshift__(self, other): return product('<<', other, self, 3)
-    def __rrshift__(self, other): return product('>>', other, self, 3)
-    def __rand__(self, other): return product('&', other, self, 2)
-    def __rxor__(self, other): return product('^', other, self, 1)
-    def __ror__(self, other): return product('|', other, self, 1)
+    # functions with 1 element
+    def __abs__(self): return Productor.product('abs', self, mod='f1e')
+    def __floor__(self): return Productor.product('math.floor', self, mod='f1e')
+    def __ceil__(self): return Productor.product('math.ceil', self, mod='f1e')
+    def __trunc__(self): return Productor.product('math.trunc', self, mod='f1e')
+
+    # functions with 2 elements
+    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e')
+
+    # operators with 1 element
+    def __pos__(self): return Productor.product('+', self, level=12, mod='1e')
+    def __neg__(self): return Productor.product('-', self, level=12, mod='1e')
+    def __invert__(self): return Productor.product('~', self, level=12, mod='1e')
+
+    # operators with 2 elements
+    def __add__(self, other): return Productor.product('+', self, other, 10, mod='2e')
+    def __sub__(self, other): return Productor.product('-', self, other, 10, mod='2e')
+    def __mul__(self, other): return Productor.product('*', self, other, 11, mod='2e')
+    def __floordiv__(self, other): return Productor.product('//', self, other, 11, mod='2e')
+    def __truediv__(self, other): return Productor.product('/', self, other, 11, mod='2e')
+    def __mod__(self, other): return Productor.product('%', self, other, 11, mod='2e')
+    def __pow__(self, other): return Productor.product('**', self, other, 13, mod='2e')
+    def __lshift__(self, other): return Productor.product('<<', self, other, 9, mod='2e')
+    def __rshift__(self, other): return Productor.product('>>', self, other, 9, mod='2e')
+    def __and__(self, other): return Productor.product('&', self, other, 8, mod='2e')
+    def __xor__(self, other): return Productor.product('^', self, other, 7, mod='2e')
+    def __or__(self, other): return Productor.product('|', self, other, 7, mod='2e')
+    
+    # operator with 2 elements('r' mod)
+    def __radd__(self, other): return Productor.product('+', other, self, 10, mod='2e')
+    def __rsub__(self, other): return Productor.product('-', other, self, 10, mod='2e')
+    def __rmul__(self, other): return Productor.product('*', other, self, 11, mod='2e')
+    def __rfloordiv__(self, other): return Productor.product('//', other, self, 11, mod='2e')
+    def __rtruediv__(self, other): return Productor.product('/', other, self, 11, mod='2e')
+    def __rmod__(self, other): return Productor.product('%', other, self, 11, mod='2e')
+    def __rpow__(self, other): return Productor.product('**', other, self, 13, mod='2e')
+    def __rlshift__(self, other): return Productor.product('<<', other, self, 9, mod='2e')
+    def __rrshift__(self, other): return Productor.product('>>', other, self, 9, mod='2e')
+    def __rand__(self, other): return Productor.product('&', other, self, 8, mod='2e')
+    def __rxor__(self, other): return Productor.product('^', other, self, 7, mod='2e')
+    def __ror__(self, other): return Productor.product('|', other, self, 7, mod='2e')
 
 class Symbol(Production):
 

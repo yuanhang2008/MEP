@@ -2,7 +2,8 @@
 
 ## install
 
-Run ```auto_install_1.bat``` to install MEP, if it doesn't work, try ```auto_install_2.bat```, please.
+Run ```auto_install_1.bat``` to install MEP, if it doesn't work, try enter ```pip install setuptools``` and ```pip install wheel``` to install the two necessary libraries, please. 
+```auto_install_2.bat``` can install MEP as a temporary modules, you can use it if you are just here to test the library or try some features, not at work or important occasions.
 
 ## usage
 

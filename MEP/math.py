@@ -85,12 +85,11 @@ class Math:
             'name': name})
 
     # basic
-    abs = newfunc(abs, 'abs')
     root = newfunc(lambda x, y: x ** (1 / y), 'root')
     sqrt = newfunc(cmath.sqrt, 'sqrt')
     cbrt = newfunc(lambda x: x ** (1 / 3), 'cbrt')
     log = newfunc(cmath.log, 'log')
-    factorial = newfunc(Helper.factorial, 'fact')
+    fact = newfunc(Helper.factorial, 'fact')
 
     # numtype
     int = newfunc(int, 'int')

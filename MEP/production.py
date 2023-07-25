@@ -7,7 +7,7 @@ from typing import Any, Callable, Set
 
 
 symbols: Set[str] = set()
-allows = ['get_sign', '_check', '_sign', '_lock']
+allows = ['get_sign' , '_sign', '_lock']
 
 def unlock(*args):
     production: Production
@@ -161,7 +161,7 @@ class Production:
     def __trunc__(self): return Productor.product('math.trunc', self, mod='f1e')
 
     # functions with 2 elements
-    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e') # round has no r-mod
+    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e')
 
     # operators with 1 element
     def __pos__(self): return Productor.product('+', self, level=12, mod='1e')
@@ -213,7 +213,6 @@ class Symbol(Production):
         if self._sign in symbols:
             raise ValueError(f'Sign {self._sign} has been defined')
         super().__init__(lambda kwargs: kwargs[self._sign], self._sign, {self._sign})
-        unlock(self)
         symbols.add(self._sign)
         relock(self)
     

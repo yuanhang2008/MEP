@@ -10,9 +10,4 @@ class TestFormula(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    #unittest.main()
-    #breakpoint()
-    f = Formula(X+Y >= 10)
-    print(f)
-    exp = f.subs(x=12, y=2)
-    print(exp, exp.value())
+    unittest.main()

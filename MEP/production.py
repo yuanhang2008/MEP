@@ -3,10 +3,10 @@
 
 import math
 from string import ascii_letters as letters
-from typing import Any, Callable
+from typing import Any, Callable, Set
 
 
-symbols: set = set()
+symbols: Set[str] = set()
 
 def unlock(*args):
     production: Production
@@ -160,7 +160,7 @@ class Production:
     def __trunc__(self): return Productor.product('math.trunc', self, mod='f1e')
 
     # functions with 2 elements
-    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e')
+    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e') # round has no r-mod
 
     # operators with 1 element
     def __pos__(self): return Productor.product('+', self, level=12, mod='1e')
@@ -180,8 +180,9 @@ class Production:
     def __and__(self, other): return Productor.product('&', self, other, 8, mod='2e')
     def __xor__(self, other): return Productor.product('^', self, other, 7, mod='2e')
     def __or__(self, other): return Productor.product('|', self, other, 7, mod='2e')
+    def __eq__(self, other): return Productor.product('==', self, other, 5, mod='2e')
     
-    # operator with 2 elements('r' mod)
+    # operator with 2 elements(r-mod)
     def __radd__(self, other): return Productor.product('+', other, self, 10, mod='2e')
     def __rsub__(self, other): return Productor.product('-', other, self, 10, mod='2e')
     def __rmul__(self, other): return Productor.product('*', other, self, 11, mod='2e')
@@ -198,18 +199,27 @@ class Production:
 class Symbol(Production):
 
     def __init__(self, sign):
-        self._locked = True
-        self.sign = sign
-        if not self._check(self.sign):
-            raise ValueError(f'{self.sign} is an invalid sign')
-        if self.sign in symbols:
-            raise ValueError(f'Sign {self.sign} has been defined')
-        super().__init__(lambda kwargs: kwargs[self.sign], self.sign, {self.sign})
-        symbols.add(self.sign)
+        self._locked: bool = True
+        self._sign: str = sign
+        unlock(self)
+        if not self._check(self._sign):
+            raise ValueError(f'{self._sign} is an invalid sign')
+        if self._sign in symbols:
+            raise ValueError(f'Sign {self._sign} has been defined')
+        super().__init__(lambda kwargs: kwargs[self._sign], self._sign, {self._sign})
+        unlock(self)
+        symbols.add(self._sign)
+        relock(self)
+    
+    def get_sign(self) -> str:
+        unlock(self)
+        sign = self._sign
+        relock(self)
+        return sign
     
     def __getattribute__(self, __name: str):
-        allows = ['sign', '_check']
-        if __name in allows:
+        allows = ['get_sign', '_check', '_sign']
+        if (not super().__getattribute__('_locked')) and (not __name in allows):
             return object.__getattribute__(self, __name)
         return super().__getattribute__(__name)
     

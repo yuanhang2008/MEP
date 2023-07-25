@@ -14,12 +14,12 @@ is_installed = False
 def getname():
     if not os.path.exists(BASE_PATH):
         print(f'{BASE_PATH} was not found')
-        os._exit()
+        os._exit(1)
     files = [file for file in os.listdir(BASE_PATH) if file.endswith('.whl')]
     if len(files) == 1:
         return files[0]
     print('wheel file was not unique')
-    os._exit()
+    os._exit(1)
 
 def rebuild():
     global is_rebuilt
@@ -34,7 +34,7 @@ def uninstall():
 
 def install():
     global is_installed
-    while not (is_rebuilt or is_uninstalled):
+    while (not is_rebuilt) and (not is_uninstalled):
         pass
     path = f'{BASE_PATH}/' + getname()
     os.system(f'pip install {path}')

@@ -76,6 +76,14 @@ class Helper:
 
 class Math:
 
+    @classmethod
+    def define(cls, func, name):
+        exec(f'cls.{name} = newfunc(func, name)', {
+            'cls': cls, 
+            'newfunc': newfunc, 
+            'func': func, 
+            'name': name})
+
     # basic
     abs = newfunc(abs, 'abs')
     root = newfunc(lambda x, y: x ** (1 / y), 'root')
@@ -143,11 +151,3 @@ class Math:
     logicnot = newfunc(lambda x: not bool(x), 'not')
     logicxor = newfunc(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
     conditions = newfunc(Helper.conditions, 'if')
-
-    @classmethod
-    def define(cls, func, name):
-        exec(f'cls.{name} = newfunc(func, name)', {
-            'cls': cls, 
-            'newfunc': newfunc, 
-            'func': func, 
-            'name': name})

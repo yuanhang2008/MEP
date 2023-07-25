@@ -10,6 +10,40 @@ from.draw import Draw
 
 class Formula:
 
+    def __init__(self, production: Production) -> None:
+        self._formula = _Formula(production)
+    
+    def subs(self, **kwargs) -> 'Expression':
+        return self._formula._subs(**kwargs)
+    
+    def draw(self, range_: tuple):
+        self._formula._draw(range_)
+
+    def curry(self, **kwargs) -> 'Formula':
+        return self._formula._curry(**kwargs)
+
+    def text(self) -> str:
+        return self._formula._text()
+
+    def __str__(self):
+        return self._formula.__str__()
+
+class Expression:
+
+    def __init__(self, func: Callable[[dict], Any], exp: str,kwargs: dict, args: set) -> None:
+        self._expression = _Expression(func, exp, kwargs, args)
+
+    def value(self) -> int | float | complex | bool:
+        return self._expression._value()
+    
+    def text(self) -> str:
+        return self._expression._text()
+    
+    def __str__(self) -> str:
+        return self._expression.__str__()
+
+class _Formula:
+
     def __init__(self, production: Production):
         unlock(production)
         if not isinstance(production, Production):
@@ -23,59 +57,14 @@ class Formula:
         self._exp = self._get_exp(self._tree)
         relock(production)
     
-    def subs(self, **kwargs):
+    def _subs(self, **kwargs):
         args = {key for key in kwargs}
         if args != self._args:
             raise ValueError(f'substitution takes {len(self._args)} arguments, not {args}')
         return Expression(self._func, self._exp, kwargs, self._args)
-    
-    def draw(self, range_: tuple):
+
+    def _draw(self, range_: tuple):
         Draw._drawer._add_func(self, range_)
-
-    def _get_exp(self, tree: dict | str | Any, level=0):
-        if type(tree) != dict and type(tree) != str: # number, bool
-            return str(tree)
-        if type(tree) == str: # symbol
-            return '$' + tree
-        if type(tree) == dict and type(tree.get('S', None)) == str: # dict, Sabc
-            args = []
-            for item in tree:
-                if item == 'S': continue
-                if type(tree[item]) == dict:
-                    args.append(self._get_exp(tree[item]))
-                else:
-                    args.append(('$' + tree[item]) if type(tree[item]) == str else str(tree[item]))
-            return f'{tree["S"]}({"".join([item + ", " for item in args[:-1]] + [args[-1]])})'
-
-        if type(tree) == dict and tree.get('V', None) is not None: # dict, OVl
-            return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
-        
-        parents = False # dict, LORl
-        if level > tree['l']:
-            parents = True
-
-        if type(tree['L']) != dict:
-            if type(tree['L']) == str:
-                left = '$' + tree['L']
-            else:
-                k = type(tree['L']) != complex and tree['L'] < 0
-                left = ('(' + str(tree['L']) + ')') if k else str(tree['L'])
-        else:
-            left = self._get_exp(tree['L'], tree['l'])
-        
-        if type(tree['R']) != dict:
-            if type(tree['R']) == str:
-                right = '$' + tree['R']
-            else:
-                k = type(tree['R']) != complex and tree['R'] < 0
-                right = ('(' + str(tree['R']) + ')') if k else str(tree['R'])
-        else:
-            right = self._get_exp(tree['R'], tree['l'])
-        
-        operator = tree['O']
-        if parents:
-            return ''.join(['(', left, operator, right, ')'])
-        return ''.join([left, operator, right])
     
     def _get_exp(self, tree: dict | str | Any, level=0):
         tree_type = self._get_tree_type(tree)
@@ -87,15 +76,18 @@ class Formula:
             case 'S*':
                 return self._get_func_tree(tree)
             case 'OVl':
-                return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
+                self._get_ovl_tree(tree)
             case 'LORl':
                 return self._get_lor_tree(tree, level)
+            case 'None':
+                return None
     
     def _get_tree_type(self, tree):
         if type(tree) == int or type(tree) == float or \
         type(tree) == complex or type(tree) == bool: return 'n||b'
 
         if type(tree) == str: return 'str'
+        if tree is None: return 'None'
 
         if type(tree) == dict:
             if tree.get('S', None) is not None: return 'S*'
@@ -109,17 +101,24 @@ class Formula:
         for item in tree:
             if item == 'S': continue
             args.append(self._get_exp(tree[item]))
-        return f'{tree["S"]}({"".join([item + ", " for item in args[:-1]] + [args[-1]])})'
+        return f'{tree["S"]}({"".join([item + ", " for item in args if item is not None])[:-2]})'
+    
+    def _get_ovl_tree(self, tree):
+        if tree['V'] is None:
+            raise ValueError('Nonetype was given to an OVL tree')
+        return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
 
     def _get_lor_tree(self, tree, level):
         parents = True if level > tree['l'] else False
         lr_result = {}
         for item in ['L', 'R']:
+            if tree[item] is None:
+                raise ValueError('Nonetype was given to a LOR tree')
             lr_result[item] = self._get_exp(tree[item])
         l_bracket, r_bracket = ('(', ')') if parents else ('', '')
         return ''.join([l_bracket, lr_result['L'], tree['O'], lr_result['R'], r_bracket])
 
-    def curry(self, **kwargs):
+    def _curry(self, **kwargs):
         args = set(tuple(self._args))
         tree = self._tree_curry(self._tree, kwargs)
         for key in kwargs:
@@ -151,7 +150,7 @@ class Formula:
             tree['R'] = self._tree_curry(tree['R'], kwargs)
         return tree
     
-    def text(self):
+    def _text(self):
         exp: str = ''
         for item in self._exp:
             if item != '$':
@@ -159,9 +158,9 @@ class Formula:
         return exp
 
     def __str__(self):
-        return f'<Formula f({"".join([arg + ", " for arg in self._args])[:-2]})={self.text()}>'
+        return f'<Formula f({"".join([arg + ", " for arg in self._args])[:-2]})={self._text()}>'
 
-class Expression:
+class _Expression:
 
     def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set):
         self._exp = exp
@@ -169,10 +168,10 @@ class Expression:
         self._func = func
         self._args = args
 
-    def value(self):
+    def _value(self):
         return self._func(self._kwargs)
 
-    def text(self):
+    def _text(self):
         flag = False
         exp: str = ''
         for item in self._exp:
@@ -189,4 +188,4 @@ class Expression:
 
     def __str__(self):
         fargs = [f'{key}={self._kwargs[key]}, ' for key in self._kwargs]
-        return f'<Expression f({"".join(fargs)[:-2]})={self.text()}>'
+        return f'<Expression f({"".join(fargs)[:-2]})={self._text()}>'

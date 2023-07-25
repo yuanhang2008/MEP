@@ -7,6 +7,7 @@ from typing import Any, Callable, Set
 
 
 symbols: Set[str] = set()
+allows = ['get_sign', '_check', '_sign', '_lock']
 
 def unlock(*args):
     production: Production
@@ -148,10 +149,10 @@ class Production:
         self._args: set = args
 
     def __getattribute__(self, __name: str):
-        allows = []
-        if super().__getattribute__('_locked') and (__name not in allows):
-            raise AttributeError('cannot access a Production object')
-        return super().__getattribute__(__name)
+        if __name in allows or not super().__getattribute__('_locked'):
+            return super().__getattribute__(__name)
+        raise AttributeError('cannot access a Production object')
+        
     
     # functions with 1 element
     def __abs__(self): return Productor.product('abs', self, mod='f1e')
@@ -181,6 +182,11 @@ class Production:
     def __xor__(self, other): return Productor.product('^', self, other, 7, mod='2e')
     def __or__(self, other): return Productor.product('|', self, other, 7, mod='2e')
     def __eq__(self, other): return Productor.product('==', self, other, 5, mod='2e')
+    def __ne__(self, other): return Productor.product('!=', self, other, 5, mod='2e')
+    def __lt__(self, other): return Productor.product('<', self, other, 5, mod='2e')
+    def __gt__(self, other): return Productor.product('>', self, other, 5, mod='2e')
+    def __le__(self, other): return Productor.product('<=', self, other, 5, mod='2e')
+    def __ge__(self, other): return Productor.product('>=', self, other, 5, mod='2e')
     
     # operator with 2 elements(r-mod)
     def __radd__(self, other): return Productor.product('+', other, self, 10, mod='2e')
@@ -218,10 +224,9 @@ class Symbol(Production):
         return sign
     
     def __getattribute__(self, __name: str):
-        allows = ['get_sign', '_check', '_sign']
-        if (not super().__getattribute__('_locked')) and (not __name in allows):
+        if __name in allows or not object.__getattribute__(self, '_locked'):
             return object.__getattribute__(self, __name)
-        return super().__getattribute__(__name)
+        raise AttributeError('cannot access a Production object')
     
     def _check(self, sign: str):
         if len(sign) == 1 and (sign in letters):

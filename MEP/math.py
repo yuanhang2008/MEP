@@ -16,19 +16,19 @@ def newfunc(func: Callable, name: str):
         trees = {}
         args_ = set()
         unlock(*args)
-        for arg in args:
+        for index, arg in enumerate(args):
             if isinstance(arg, Production):
-                funcs[arg] = arg._func
-                trees[arg] = arg._tree
+                funcs[index] = arg._func
+                trees[index] = arg._tree
                 args_ = args_ | arg._args
         relock(*args)
 
         if not any([isinstance(arg, Production) for arg in args]):
             return func(*args)
         return Production(lambda kwargs: func(
-            *[(funcs[arg](kwargs) if isinstance(arg, Production) else arg) for arg in args]),
+            *[(funcs[index](kwargs) if isinstance(arg, Production) else arg) for index, arg in enumerate(args)]),
             dict((('S', name),) + tuple(
-                [(letters[index], trees[arg] if isinstance(arg, Production) else arg)
+                [(letters[index], trees[index] if isinstance(arg, Production) else arg)
                  for index, arg in enumerate(args)])), 
             args_)
 

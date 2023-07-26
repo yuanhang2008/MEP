@@ -7,7 +7,7 @@ from typing import Any, Callable, Set
 
 
 symbols: Set[str] = set()
-allows = ['get_sign' , '_sign', '_lock']
+allows = ['get_sign']
 
 def unlock(*args):
     production: Production
@@ -208,12 +208,12 @@ class Symbol(Production):
         self._locked: bool = True
         self._sign: str = sign
         unlock(self)
-        if not self._check(self._sign):
-            raise ValueError(f'{self._sign} is an invalid sign')
-        if self._sign in symbols:
-            raise ValueError(f'Sign {self._sign} has been defined')
-        super().__init__(lambda kwargs: kwargs[self._sign], self._sign, {self._sign})
-        symbols.add(self._sign)
+        if not self._check(sign):
+            raise ValueError(f'{sign} is an invalid sign')
+        if sign in symbols:
+            raise ValueError(f'Sign {sign} has been defined')
+        super().__init__(lambda kwargs: kwargs[sign], sign, {sign})
+        symbols.add(sign)
         relock(self)
     
     def get_sign(self) -> str:

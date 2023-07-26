@@ -60,7 +60,7 @@ class _Formula:
     def _subs(self, **kwargs):
         args = {key for key in kwargs}
         if args != self._args:
-            raise ValueError(f'substitution takes {len(self._args)} arguments, not {args}')
+            raise ValueError(f'substitution takes {len(self._args)} arguments, be {len(args)} was given')
         return Expression(self._func, self._exp, kwargs, self._args)
 
     def _draw(self, range_: tuple):
@@ -94,7 +94,7 @@ class _Formula:
             if tree.get('V', None) is not None: return 'OVl'
             if tree.get('L', None) is not None: return 'LORl'
         
-        raise ValueError(f'bad tree {tree} was given')
+        raise ValueError(f'bad tree was given')
 
     def _get_func_tree(self, tree):
         args = []

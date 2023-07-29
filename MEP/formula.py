@@ -182,7 +182,6 @@ class _Expression:
                     flag = True
                     break
             if flag: continue
-            print('cache!')
             return item[2]
         
         self._cache.append((self._exp, self._kwargs, self._result))    

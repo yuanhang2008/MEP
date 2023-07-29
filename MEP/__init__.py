@@ -21,7 +21,6 @@ X = Symbol('x')
 Y = Symbol('y')
 Z = Symbol('z')
 
-
 __all__ = [
     'X', 'Y', 'Z', 
     'Formula', 

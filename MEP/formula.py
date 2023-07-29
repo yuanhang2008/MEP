@@ -8,6 +8,20 @@ from .production import Production, relock, unlock
 from.draw import Draw
 
 
+def get_tree_type(tree):
+        if type(tree) == int or type(tree) == float or \
+        type(tree) == complex or type(tree) == bool: return 'n||b'
+
+        if type(tree) == str: return 'str'
+        if tree is None: return 'None'
+
+        if type(tree) == dict:
+            if tree.get('S', None) is not None: return 'S*'
+            if tree.get('V', None) is not None: return 'OVl'
+            if tree.get('L', None) is not None: return 'LORl'
+        
+        raise ValueError(f'bad tree was given')
+
 class Formula:
 
     def __init__(self, production: Production) -> None:
@@ -30,8 +44,8 @@ class Formula:
 
 class Expression:
 
-    def __init__(self, func: Callable[[dict], Any], exp: str,kwargs: dict, args: set) -> None:
-        self._expression = _Expression(func, exp, kwargs, args)
+    def __init__(self, func: Callable[[dict], Any], exp: str,kwargs: dict, args: set, tree) -> None:
+        self._expression = _Expression(func, exp, kwargs, args, tree)
 
     def value(self) -> int | float | complex | bool:
         return self._expression._value()
@@ -61,13 +75,13 @@ class _Formula:
         args = {key for key in kwargs}
         if args != self._args:
             raise ValueError(f'substitution takes {len(self._args)} arguments, be {len(args)} was given')
-        return Expression(self._func, self._exp, kwargs, self._args)
+        return Expression(self._func, self._exp, kwargs, self._args, self._tree)
 
     def _draw(self, range_: tuple):
         Draw._drawer._add_func(self, range_)
     
     def _get_exp(self, tree: dict | str | Any, level=0):
-        tree_type = self._get_tree_type(tree)
+        tree_type = get_tree_type(tree)
         match tree_type:
             case 'n||b':
                 return str(tree)
@@ -81,20 +95,6 @@ class _Formula:
                 return self._get_lor_tree(tree, level)
             case 'None':
                 return None
-    
-    def _get_tree_type(self, tree):
-        if type(tree) == int or type(tree) == float or \
-        type(tree) == complex or type(tree) == bool: return 'n||b'
-
-        if type(tree) == str: return 'str'
-        if tree is None: return 'None'
-
-        if type(tree) == dict:
-            if tree.get('S', None) is not None: return 'S*'
-            if tree.get('V', None) is not None: return 'OVl'
-            if tree.get('L', None) is not None: return 'LORl'
-        
-        raise ValueError(f'bad tree was given')
 
     def _get_func_tree(self, tree):
         args = []
@@ -162,14 +162,35 @@ class _Formula:
 
 class _Expression:
 
-    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set):
+    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree):
         self._exp = exp
         self._kwargs = kwargs
         self._func = func
         self._args = args
+        self._tree = self._get_tree(tree, kwargs)
 
     def _value(self):
         return self._func(self._kwargs)
+    
+    def _get_tree(self, tree: dict | str | Any, kwargs: dict):
+        tree_type = get_tree_type(tree)
+        match tree_type:
+            case 'n||b' | 'None':
+                return tree
+            case 'str':
+                return kwargs.get(tree)
+            case 'S*':
+                for item in tree:
+                    if item == 'S': continue
+                    tree[item] = self._get_tree(tree[item], kwargs)
+                return tree
+            case 'OVl':
+                tree['V'] = self._get_tree(tree['V'], kwargs)
+                return tree
+            case 'LORl':
+                tree['L'] = self._get_tree(tree['L'], kwargs)
+                tree['R'] = self._get_tree(tree['R'], kwargs)
+                return tree
 
     def _text(self):
         flag = False

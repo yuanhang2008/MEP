@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
-from typing import Any, Callable
+from typing import Any, Callable, List
 
 from .production import Production, relock, unlock
 
@@ -162,15 +162,31 @@ class _Formula:
 
 class _Expression:
 
+    _cache: List = []
+
     def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree):
         self._exp = exp
         self._kwargs = kwargs
         self._func = func
         self._args = args
         self._tree = self._get_tree(tree, kwargs)
+        self._result = self._func(self._kwargs)
 
     def _value(self):
-        return self._func(self._kwargs)
+        item: tuple
+        flag = False
+        for item in self._cache:
+            if item[0] != self._exp: continue
+            for arg in self._kwargs:
+                if self._kwargs.get(arg, None) != item[1][arg]: 
+                    flag = True
+                    break
+            if flag: continue
+            print('cache!')
+            return item[2]
+        
+        self._cache.append((self._exp, self._kwargs, self._result))    
+        return self._result
     
     def _get_tree(self, tree: dict | str | Any, kwargs: dict):
         tree_type = get_tree_type(tree)

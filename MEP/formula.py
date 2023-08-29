@@ -1,14 +1,16 @@
 # -*- coding:utf-8 -*-
 
 
-from typing import Any, Callable, List
+from typing import Any, Callable, List, NoReturn
 
 from .production import Production, relock, unlock
 
 from.draw import Draw
 
 
-def get_tree_type(tree):
+named_formulas: dict = {}
+
+def _get_tree_type(tree):
         if type(tree) == int or type(tree) == float or \
         type(tree) == complex or type(tree) == bool: return 'n||b'
 
@@ -22,15 +24,31 @@ def get_tree_type(tree):
         
         raise ValueError(f'bad tree was given')
 
+def _name_check(name: str) -> 'Formula' | NoReturn:
+    formula: Formula | None = named_formulas.get(name, None)
+    if formula is None:
+        raise ValueError(f'No such a formula named {name}')
+    return formula
+
+def call_with_name(name: str, **kwargs) -> 'Expression' | NoReturn:
+    formula = _name_check(name)
+    return formula.subs(**kwargs)
+
+def get_formula(name: str) -> 'Formula' | NoReturn:
+    formula = _name_check(name)
+    return formula
+
 class Formula:
 
-    def __init__(self, production: Production) -> None:
-        self._formula = _Formula(production)
+    def __init__(self, production: Production, name: str =...) -> None:
+        self._formula = _Formula(production, name)
+        if name is not ...:
+            named_formulas[name] = self
     
     def subs(self, **kwargs) -> 'Expression':
         return self._formula._subs(**kwargs)
     
-    def draw(self, range_: tuple):
+    def draw(self, range_: tuple) -> None:
         self._formula._draw(range_)
 
     def curry(self, **kwargs) -> 'Formula':
@@ -58,7 +76,7 @@ class Expression:
 
 class _Formula:
 
-    def __init__(self, production: Production):
+    def __init__(self, production: Production, name: str =...):
         unlock(production)
         if not isinstance(production, Production):
             self._func = lambda kwargs: production
@@ -81,7 +99,7 @@ class _Formula:
         Draw._drawer._add_func(self, range_)
     
     def _get_exp(self, tree: dict | str | Any, level=0):
-        tree_type = get_tree_type(tree)
+        tree_type = _get_tree_type(tree)
         match tree_type:
             case 'n||b':
                 return str(tree)
@@ -188,7 +206,7 @@ class _Expression:
         return self._result
     
     def _get_tree(self, tree: dict | str | Any, kwargs: dict):
-        tree_type = get_tree_type(tree)
+        tree_type = _get_tree_type(tree)
         match tree_type:
             case 'n||b' | 'None':
                 return tree

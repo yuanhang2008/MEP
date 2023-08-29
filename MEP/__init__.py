@@ -10,7 +10,7 @@ A tool to product, show or operate formulas.
 __version__ = '1.0.2'
 
 
-from .formula import Formula
+from .formula import Formula, call_with_name, get_formula
 
 from.draw import Draw
 from .math import Math
@@ -24,6 +24,8 @@ Z = Symbol('z')
 __all__ = [
     'X', 'Y', 'Z', 
     'Formula', 
+    'call_with_name', 
+    'get_formula', 
     'Draw', 
     'Math', 
     'Symbol', 

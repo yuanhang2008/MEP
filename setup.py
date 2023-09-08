@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 
+import sys
+
 from setuptools import setup
 
 
@@ -14,16 +16,16 @@ with open('./MEP/__init__.py', 'r', encoding='utf-8') as init:
             version = line.split(delim)[1]
             break
     else:
-        print("Can't find version! Stop Here!")
-        exit(1)
+        print("Can't find version!")
+        sys.exit(1)
 
 setup(
     name='MEP', 
     version=version, 
-    description='Mathematical expression processing.', 
+    description='Mathematical Expression Parsing.', 
     long_description=long_description, 
-    author='yuanhang', 
+    author='yuanhang2008', 
     author_email='minecraft_mo_ye@qq.com', 
-    url='https://github.com/yuanhang/MEP', 
+    url='https://github.com/yuanhang2008/MEP', 
     packages=['MEP']
 )

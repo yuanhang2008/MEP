@@ -38,18 +38,9 @@ def color(num: int):
 
 class Drawer:
 
-    def __init__(self, max: int | None=None):
-        self._max = max
+    def __init__(self):
         self._precision = 640
         self._funcs = []
-    
-    def _setmax(self, value):
-        if value <= 0:
-            raise ValueError('maximum value should be greater than 0')
-        if int(value) != value:
-            raise TypeError('maximum value should be an integer')
-        self._max = value
-        self._check_flow(self._max, len(self._funcs))
     
     def _setprec(self, value):
         if type(value) != int:
@@ -57,31 +48,26 @@ class Drawer:
         self._precision = value
 
     def _add_func(self, formula, range_):
-        self._check_flow(self._max, len(self._funcs) + 1)
         self._funcs.append((formula, range_))
-
-    def _check_flow(self, max, funcs_length) -> None:
-        if max is None:
-            return
-        if funcs_length > max:
-            raise ValueError(f'{funcs_length} (more than {max}) items to draw')
     
-    def _get(self, func, arg, num_1, num_2):
-        max, min = num_1, num_2
-        if num_1 < num_2: 
-            max, min = min, max
-        range_ = abs(max - min)
-        cache = min
-        added = range_ / self._precision
-        x = [cache]
-        y = [func({arg: cache})]
-        for _ in range(self._precision):
-            cache += added
-            x.append(cache)
-        if cache != max:
-            x.append(max)
-        y = [func({arg: kwarg}) for kwarg in x]
-        return x, y
+    def _range_check(self, range_):
+        if range_[0] > range_[1]:
+            raise ValueError(f'{range_} cant be a useable range')
+    
+    def _get(self, func, arg, range_):
+        self._range_check(range_)
+        d = (range_[1] - range_[0]) / self._precision
+        x = range_[0]
+        xlst, ylst = [], []
+        while x <= range_[1]:
+            try:
+                ylst.append(func({arg: x}))
+                xlst.append(x)
+            except ZeroDivisionError:
+                pass
+            x += d
+
+        return xlst, ylst
 
     def _show(self):
         colors = color(len(self._funcs))
@@ -91,11 +77,11 @@ class Drawer:
             range_ = func[1]
 
             if len(formula._args) > 1:
-                raise ValueError('cannot display a formula for multiple parameters')
+                raise ValueError('cannot display a formula with more than 1 symbol')
             arg = list(formula._args)[0]
-            x, y = self._get(formula._func, arg, *range_)
+            x, y = self._get(formula._func, arg, range_)
 
-            plt.plot(x, y, color=colors[counter], label=str(formula))
+            plt.plot(x, y, color=colors[counter], label=formula._text())
             counter += 1
         self._funcs.clear()
         plt.legend(loc='best')
@@ -108,10 +94,6 @@ class Draw:
     @classmethod
     def display(cls):
         cls._drawer._show()
-
-    @classmethod
-    def setmax(cls, value):
-        cls._drawer._setmax(value)
     
     @classmethod
     def setprec(cls, value):

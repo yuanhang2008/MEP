@@ -64,17 +64,6 @@ Use variable ```symbols``` to get all defined symbols's sign, you can also visit
 >>>Draw.display()
 ```
 
-```setmax``` is a way to set the maximum number of functions display on the plot.
-The default max is None, i.e. infinity.
-
-```python
->>>Draw.setmax(2)
-
->>>f3 = Formula(MEP.X * 0.2)
->>>f3.draw(range_)
-# ValueError: 3 (more than 2) items to draw
-```
-
 more functions, such as ```clear```: clear all the formulas in Draw object.
 
 ```python

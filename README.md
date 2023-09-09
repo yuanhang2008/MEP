@@ -1,5 +1,15 @@
 # MEP
 
+![License](https://img.shields.io/badge/license-MIT-green) ![Language](https://img.shields.io/badge/language-Py3.11-blue) ![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP%2Freleases%2Flatest&query=name&label=version&color=red)  ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP&query=stargazers_count&label=stars&color=yellow)
+
+
+
+***Mathematical Expression Parsing.***
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/yuanhang2008/MEP.svg)](https://starchart.cc/yuanhang2008/MEP)
+
 ## install
 
 Run ```auto_install_1.bat``` to install MEP, if it doesn't work, try enter ```pip install setuptools``` and ```pip install wheel``` to install the two necessary libraries, please. 
@@ -120,8 +130,14 @@ Class ```Math``` provides with some special functions, which can participate in 
 
 Please send bug reports and feature requests through [github issue tracker](https://github.com/yuanhang2008/MEP/issues).
 
+## About Author
+
+Bilbili: [l_yuanhang_l](https://space.bilibili.com/1449535398)
+Github: [yuanhang2008](https://github.com/yuanhang2008)
+QQ: [远航](https://user.qzone.qq.com/3467359137)
+
 ## License
 
-Copyright yuanhang, 2023.
+Copyright yuanhang2008, 2023.
 
 Distributed under the terms of the  [MIT License](https://github.com/yuanhang2008/MEP/blob/master/LICENSE).

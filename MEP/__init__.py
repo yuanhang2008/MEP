@@ -7,7 +7,7 @@ MEP: Mathematical expression processing.
 A tool to product, show or operate formulas.
 '''
 
-__version__ = '1.0.4'
+__version__ = '1.1.0'
 
 
 from .formula import Formula, call_with_name, get_formula

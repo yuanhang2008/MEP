@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 
+import math
 from typing import Any, Callable, List, NoReturn
 
 from .production import Production, relock, unlock
@@ -59,6 +60,54 @@ class Formula:
 
     def __str__(self):
         return self._formula.__str__()
+    
+    # functions with 1 element
+    def __abs__(self): return self._formula.__abs__()
+    def __floor__(self): return self._formula.__floor__()
+    def __ceil__(self): return self._formula.__ceil__()
+    def __trunc__(self): return self._formula.__trunc__()
+
+    # functions with 2 elements
+    def __round__(self, arg=None): return self._formula.__round__(arg)
+
+    # operators with 1 element
+    def __pos__(self): return self._formula.__pos__()
+    def __neg__(self): return self._formula.__neg__()
+    def __invert__(self): return self._formula.__invert__()
+
+    # operators with 2 elements
+    def __add__(self, other): return self._formula.__add__(other)
+    def __sub__(self, other): return self._formula.__sub__(other)
+    def __mul__(self, other): return self._formula.__mul__(other)
+    def __floordiv__(self, other): return self._formula.__floordiv__(other)
+    def __truediv__(self, other): return self._formula.__truediv__(other)
+    def __mod__(self, other): return self._formula.__mod__(other)
+    def __pow__(self, other): return self._formula.__pow__(other)
+    def __lshift__(self, other): return self._formula.__lshift__(other)
+    def __rshift__(self, other): return self._formula.__rshift__(other)
+    def __and__(self, other): return self._formula.__and__(other)
+    def __xor__(self, other): return self._formula.__xor__(other)
+    def __or__(self, other): return self._formula.__or__(other)
+    def __eq__(self, other): return self._formula.__eq__(other)
+    def __ne__(self, other): return self._formula.__ne__(other)
+    def __lt__(self, other): return self._formula.__lt__(other)
+    def __gt__(self, other): return self._formula.__gt__(other)
+    def __le__(self, other): return self._formula.__le__(other)
+    def __ge__(self, other): return self._formula.__ge__(other)
+    
+    # operator with 2 elements(r-mod)
+    def __radd__(self, other): return self._formula.__radd__(other)
+    def __rsub__(self, other): return self._formula.__rsub__(other)
+    def __rmul__(self, other): return self._formula.__rmul__(other)
+    def __rfloordiv__(self, other): return self._formula.__rfloordiv__(other)
+    def __rtruediv__(self, other): return self._formula.__rtruediv__(other)
+    def __rmod__(self, other): return self._formula.__rmod__(other)
+    def __rpow__(self, other): return self._formula.__rpow__(other)
+    def __rlshift__(self, other): return self._formula.__rlshift__(other)
+    def __rrshift__(self, other): return self._formula.__rrshift__(other)
+    def __rand__(self, other): return self._formula.__rand__(other)
+    def __rxor__(self, other): return self._formula.__rxor__(other)
+    def __ror__(self, other): return self._formula.__ror__(other)
 
 class Expression:
 
@@ -77,17 +126,18 @@ class Expression:
 class _Formula:
 
     def __init__(self, production: Production, name: str =...):
-        unlock(production)
-        if not isinstance(production, Production):
-            self._func = lambda kwargs: production
-            self._tree = production
+        self._production = production
+        unlock(self._production)
+        if not isinstance(self._production, Production):
+            self._func = lambda kwargs: self._production
+            self._tree = self._production
             self._args = set()
         else:
-            self._func = production._func
-            self._tree = production._tree
-            self._args = set(sorted(list(production._args)))
+            self._func = self._production._func
+            self._tree = self._production._tree
+            self._args = set(sorted(list(self._production._args)))
         self._exp = self._get_exp(self._tree)
-        relock(production)
+        relock(self._production)
     
     def _subs(self, **kwargs):
         args = {key for key in kwargs}
@@ -177,6 +227,54 @@ class _Formula:
 
     def __str__(self):
         return f'<Formula f({"".join([arg + ", " for arg in self._args])[:-2]})={self._text()}>'
+    
+    # functions with 1 element
+    def __abs__(self): p = abs(self._production);return Formula(p)
+    def __floor__(self): p = math.floor(self._production);return Formula(p)
+    def __ceil__(self): p = math.ceil(self._production);return Formula(p)
+    def __trunc__(self): p = math.trunc(self._production);return Formula(p)
+
+    # functions with 2 elements
+    def __round__(self, arg=None): p = round(self._production, arg);return Formula(p)
+
+    # operators with 1 element
+    def __pos__(self): p = +self._production;return Formula(p)
+    def __neg__(self): p = -self._production;return Formula(p)
+    def __invert__(self): p = ~self._production;return Formula(p)
+
+    # operators with 2 elements
+    def __add__(self, other): p = self._production + other._formula._production;return Formula(p)
+    def __sub__(self, other): p = self._production - other._formula._production;return Formula(p)
+    def __mul__(self, other): p = self._production * other._formula._production;return Formula(p)
+    def __floordiv__(self, other): p = self._production // other._formula._production;return Formula(p)
+    def __truediv__(self, other): p = self._production / other._formula._production;return Formula(p)
+    def __mod__(self, other): p = self._production % other._formula._production;return Formula(p)
+    def __pow__(self, other): p = self._production ** other._formula._production;return Formula(p)
+    def __lshift__(self, other): p = self._production << other._formula._production;return Formula(p)
+    def __rshift__(self, other): p = self._production >> other._formula._production;return Formula(p)
+    def __and__(self, other): p = self._production & other._formula._production;return Formula(p)
+    def __xor__(self, other): p = self._production ^ other._formula._production;return Formula(p)
+    def __or__(self, other): p = self._production | other._formula._production;return Formula(p)
+    def __eq__(self, other): p = self._production == other._formula._production;return Formula(p)
+    def __ne__(self, other): p = self._production != other._formula._production;return Formula(p)
+    def __lt__(self, other): p = self._production < other._formula._production;return Formula(p)
+    def __gt__(self, other): p = self._production > other._formula._production;return Formula(p)
+    def __le__(self, other): p = self._production <= other._formula._production;return Formula(p)
+    def __ge__(self, other): p = self._production >= other._formula._production;return Formula(p)
+    
+    # operator with 2 elements(r-mod)
+    def __radd__(self, other): p = other._formula._production + self._production;return Formula(p)
+    def __rsub__(self, other): p = other._formula._production - self._production;return Formula(p)
+    def __rmul__(self, other): p = other._formula._production * self._production;return Formula(p)
+    def __rfloordiv__(self, other): p = other._formula._production // self._production;return Formula(p)
+    def __rtruediv__(self, other): p = other._formula._production / self._production;return Formula(p)
+    def __rmod__(self, other): p = other._formula._production % self._production;return Formula(p)
+    def __rpow__(self, other): p = other._formula._production ** self._production;return Formula(p)
+    def __rlshift__(self, other): p = other._formula._production << self._production;return Formula(p)
+    def __rrshift__(self, other): p = other._formula._production >> self._production;return Formula(p)
+    def __rand__(self, other): p = other._formula._production & self._production;return Formula(p)
+    def __rxor__(self, other): p = other._formula._production ^ self._production;return Formula(p)
+    def __ror__(self, other): p = other._formula._production | self._production;return Formula(p)
 
 class _Expression:
 

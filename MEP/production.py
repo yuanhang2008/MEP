@@ -36,9 +36,9 @@ class Productor:
         value1: 'Production | Any', 
         value2: 'Production | None | Any'=None, 
         level: int | None=None, 
-        mod: str=''):
+        mode: str=''):
 
-        match mod:
+        match mode:
             case '1e':
                 return cls.product1e(operator, value1, level)
             case '2e':
@@ -155,52 +155,52 @@ class Production:
         
     
     # functions with 1 element
-    def __abs__(self): return Productor.product('abs', self, mod='f1e')
-    def __floor__(self): return Productor.product('math.floor', self, mod='f1e')
-    def __ceil__(self): return Productor.product('math.ceil', self, mod='f1e')
-    def __trunc__(self): return Productor.product('math.trunc', self, mod='f1e')
+    def __abs__(self): return Productor.product('abs', self, mode='f1e')
+    def __floor__(self): return Productor.product('math.floor', self, mode='f1e')
+    def __ceil__(self): return Productor.product('math.ceil', self, mode='f1e')
+    def __trunc__(self): return Productor.product('math.trunc', self, mode='f1e')
 
     # functions with 2 elements
-    def __round__(self, arg=None): return Productor.product('round', self, arg, mod='f2e')
+    def __round__(self, arg=None): return Productor.product('round', self, arg, mode='f2e')
 
     # operators with 1 element
-    def __pos__(self): return Productor.product('+', self, level=12, mod='1e')
-    def __neg__(self): return Productor.product('-', self, level=12, mod='1e')
-    def __invert__(self): return Productor.product('~', self, level=12, mod='1e')
+    def __pos__(self): return Productor.product('+', self, level=12, mode='1e')
+    def __neg__(self): return Productor.product('-', self, level=12, mode='1e')
+    def __invert__(self): return Productor.product('~', self, level=12, mode='1e')
 
     # operators with 2 elements
-    def __add__(self, other): return Productor.product('+', self, other, 10, mod='2e')
-    def __sub__(self, other): return Productor.product('-', self, other, 10, mod='2e')
-    def __mul__(self, other): return Productor.product('*', self, other, 11, mod='2e')
-    def __floordiv__(self, other): return Productor.product('//', self, other, 11, mod='2e')
-    def __truediv__(self, other): return Productor.product('/', self, other, 11, mod='2e')
-    def __mod__(self, other): return Productor.product('%', self, other, 11, mod='2e')
-    def __pow__(self, other): return Productor.product('**', self, other, 13, mod='2e')
-    def __lshift__(self, other): return Productor.product('<<', self, other, 9, mod='2e')
-    def __rshift__(self, other): return Productor.product('>>', self, other, 9, mod='2e')
-    def __and__(self, other): return Productor.product('&', self, other, 8, mod='2e')
-    def __xor__(self, other): return Productor.product('^', self, other, 7, mod='2e')
-    def __or__(self, other): return Productor.product('|', self, other, 7, mod='2e')
-    def __eq__(self, other): return Productor.product('==', self, other, 5, mod='2e')
-    def __ne__(self, other): return Productor.product('!=', self, other, 5, mod='2e')
-    def __lt__(self, other): return Productor.product('<', self, other, 5, mod='2e')
-    def __gt__(self, other): return Productor.product('>', self, other, 5, mod='2e')
-    def __le__(self, other): return Productor.product('<=', self, other, 5, mod='2e')
-    def __ge__(self, other): return Productor.product('>=', self, other, 5, mod='2e')
+    def __add__(self, other): return Productor.product('+', self, other, 10, mode='2e')
+    def __sub__(self, other): return Productor.product('-', self, other, 10, mode='2e')
+    def __mul__(self, other): return Productor.product('*', self, other, 11, mode='2e')
+    def __floordiv__(self, other): return Productor.product('//', self, other, 11, mode='2e')
+    def __truediv__(self, other): return Productor.product('/', self, other, 11, mode='2e')
+    def __mod__(self, other): return Productor.product('%', self, other, 11, mode='2e')
+    def __pow__(self, other): return Productor.product('**', self, other, 13, mode='2e')
+    def __lshift__(self, other): return Productor.product('<<', self, other, 9, mode='2e')
+    def __rshift__(self, other): return Productor.product('>>', self, other, 9, mode='2e')
+    def __and__(self, other): return Productor.product('&', self, other, 8, mode='2e')
+    def __xor__(self, other): return Productor.product('^', self, other, 7, mode='2e')
+    def __or__(self, other): return Productor.product('|', self, other, 7, mode='2e')
+    def __eq__(self, other): return Productor.product('==', self, other, 5, mode='2e')
+    def __ne__(self, other): return Productor.product('!=', self, other, 5, mode='2e')
+    def __lt__(self, other): return Productor.product('<', self, other, 5, mode='2e')
+    def __gt__(self, other): return Productor.product('>', self, other, 5, mode='2e')
+    def __le__(self, other): return Productor.product('<=', self, other, 5, mode='2e')
+    def __ge__(self, other): return Productor.product('>=', self, other, 5, mode='2e')
     
     # operator with 2 elements(r-mod)
-    def __radd__(self, other): return Productor.product('+', other, self, 10, mod='2e')
-    def __rsub__(self, other): return Productor.product('-', other, self, 10, mod='2e')
-    def __rmul__(self, other): return Productor.product('*', other, self, 11, mod='2e')
-    def __rfloordiv__(self, other): return Productor.product('//', other, self, 11, mod='2e')
-    def __rtruediv__(self, other): return Productor.product('/', other, self, 11, mod='2e')
-    def __rmod__(self, other): return Productor.product('%', other, self, 11, mod='2e')
-    def __rpow__(self, other): return Productor.product('**', other, self, 13, mod='2e')
-    def __rlshift__(self, other): return Productor.product('<<', other, self, 9, mod='2e')
-    def __rrshift__(self, other): return Productor.product('>>', other, self, 9, mod='2e')
-    def __rand__(self, other): return Productor.product('&', other, self, 8, mod='2e')
-    def __rxor__(self, other): return Productor.product('^', other, self, 7, mod='2e')
-    def __ror__(self, other): return Productor.product('|', other, self, 7, mod='2e')
+    def __radd__(self, other): return Productor.product('+', other, self, 10, mode='2e')
+    def __rsub__(self, other): return Productor.product('-', other, self, 10, mode='2e')
+    def __rmul__(self, other): return Productor.product('*', other, self, 11, mode='2e')
+    def __rfloordiv__(self, other): return Productor.product('//', other, self, 11, mode='2e')
+    def __rtruediv__(self, other): return Productor.product('/', other, self, 11, mode='2e')
+    def __rmod__(self, other): return Productor.product('%', other, self, 11, mode='2e')
+    def __rpow__(self, other): return Productor.product('**', other, self, 13, mode='2e')
+    def __rlshift__(self, other): return Productor.product('<<', other, self, 9, mode='2e')
+    def __rrshift__(self, other): return Productor.product('>>', other, self, 9, mode='2e')
+    def __rand__(self, other): return Productor.product('&', other, self, 8, mode='2e')
+    def __rxor__(self, other): return Productor.product('^', other, self, 7, mode='2e')
+    def __ror__(self, other): return Productor.product('|', other, self, 7, mode='2e')
 
 class Symbol(Production):
 

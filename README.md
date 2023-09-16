@@ -132,7 +132,7 @@ Class ```Math``` provides with some special functions, which can participate in 
 - [ ] show functions images with tkinter
 - [ ] code for test (too lazy to write
 - [ ] analyze formulas, such as calculating definition domains
-- [ ] optimize the code
+- [ ] optimize the code  
 ...
 
 ## Bugs/Requests

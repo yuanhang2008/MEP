@@ -60,7 +60,7 @@ Use variable ```symbols``` to get all defined symbols's sign, you can also visit
 
 ### draw
 
-```Draw``` is used to draw a function plot in matplotlib
+```Draw``` is used to draw a function plot in matplotlib.
 
 ```python
 >>>range_ = (-100, 100)
@@ -74,7 +74,7 @@ Use variable ```symbols``` to get all defined symbols's sign, you can also visit
 >>>Draw.display()
 ```
 
-more functions, such as ```clear```: clear all the formulas in Draw object.
+More functions, such as ```clear```: clear all the formulas in Draw object.
 
 ```python
 >>>Draw.clear()
@@ -125,6 +125,15 @@ Class ```Math``` provides with some special functions, which can participate in 
 >>>exp.value
 5
 ```
+
+## Features in Development
+
+- [ ] merge formulas by functions in Math
+- [ ] show functions images with tkinter
+- [ ] code for test (too lazy to write
+- [ ] analyze formulas, such as calculating definition domains
+- [ ] optimize the code
+...
 
 ## Bugs/Requests
 

@@ -149,4 +149,8 @@ QQ: [远航](https://user.qzone.qq.com/3467359137)
 
 Copyright yuanhang2008, 2023.
 
-Distributed under the terms of the  [MIT License](https://github.com/yuanhang2008/MEP/blob/master/LICENSE).
+Distributed under the terms of the [MIT License](https://github.com/yuanhang2008/MEP/blob/master/LICENSE).
+
+## Change Log
+
+View the change log [here](https://github.com/yuanhang2008/MEP/blob/master/CHANGELOG.md).

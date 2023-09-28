@@ -12,56 +12,69 @@ from .production import *
 from.formula import Formula, unlock, relock
 
 
-def args_type_check(args):
-    num_count = formula_count = production_count = 0
-    for arg in args:
-        if not isinstance(arg, (Formula, Production)):
-            num_count += 1
-        elif isinstance(arg, Formula):
-            formula_count += 1
-        elif isinstance(arg, Production):
-            production_count += 1
+class Constructor:
 
-    if num_count == len(args):
-        return 'allnum'
-    elif production_count and formula_count:
-        raise TypeError('unsupported operand type(s) for this math functions: Formula and Production')
-    elif production_count:
-        return 'prod'
-    elif formula_count:
-        return 'form'
+    @classmethod
+    def _args_type_check(cls, args):
+        num_count = formula_count = production_count = 0
+        for arg in args:
+            if not isinstance(arg, (Formula, Production)):
+                num_count += 1
+            elif isinstance(arg, Formula):
+                formula_count += 1
+            elif isinstance(arg, Production):
+                production_count += 1
 
-def newfunc(func: Callable, name: str):
-    def wrapper(*args: Production | Formula | Any):
-        match args_type_check(args):
-            case 'allnum':
-                return func(*args)
-            case 'prod':
-                funcs, trees, args_ = {}, {}, set()
-                unlock(*args)
-                for index, arg in enumerate(args):
-                    if isinstance(arg, Production):
-                        funcs[index] = arg._func
-                        trees[index] = arg._tree
-                        args_ = args_ | arg._args
-                relock(*args)
-                return Production(lambda kwargs: func(
-                    *[(funcs[index](kwargs) if isinstance(arg, Production) else arg) for index, arg in enumerate(args)]),
-                    dict((('S', name),) + tuple(
-                        [(letters[index], trees[index] if isinstance(arg, Production) else arg)
-                         for index, arg in enumerate(args)])), 
-                    args_)
-            case 'form':
-                productions = {}
-                unlock(*args)
-                for index, arg in enumerate(args):
-                    if isinstance(arg, Formula):
-                        productions[index] = arg._formula._production
-                relock(*args)
-                production = wrapper(*[(productions[index] if isinstance(arg, Formula) else arg) for index, arg in enumerate(args)])
-                return Formula(production)
+        if num_count == len(args):
+            return 'allnum'
+        elif production_count and formula_count:
+            raise TypeError('unsupported operand type(s) for this math functions: Formula and Production')
+        elif production_count:
+            return 'prod'
+        elif formula_count:
+            return 'form'
 
-    return wrapper
+    @classmethod
+    def _construct_production(cls, func, args, name):
+        funcs, trees, args_ = {}, {}, set()
+        unlock(*args)
+        for index, arg in enumerate(args):
+            if isinstance(arg, Production):
+                funcs[index] = arg._func
+                trees[index] = arg._tree
+                args_ = args_ | arg._args
+        relock(*args)
+
+        return Production(lambda kwargs: func(
+            *[(funcs[index](kwargs) if isinstance(arg, Production) else arg) for index, arg in enumerate(args)]),
+            dict((('S', name),) + tuple(
+                [(letters[index], trees[index] if isinstance(arg, Production) else arg)
+                 for index, arg in enumerate(args)])), 
+            args_)
+
+    @classmethod
+    def _construct_formula(cls, args, wrapper):
+        productions = {}
+        unlock(*args)
+        for index, arg in enumerate(args):
+            if isinstance(arg, Formula):
+                productions[index] = arg._formula._production
+        relock(*args)
+
+        production = wrapper(*[(productions[index] if isinstance(arg, Formula) else arg) for index, arg in enumerate(args)])
+        return Formula(production)
+
+    @classmethod
+    def newfunc(cls, func: Callable, name: str):
+        def wrapper(*args: Production | Formula | Any):
+            match cls._args_type_check(args):
+                case 'allnum':
+                    return func(*args)
+                case 'prod':
+                    return cls._construct_production(func, args, name)
+                case 'form':
+                    return cls._construct_formula(args, wrapper)
+        return wrapper
 
 class Utils:
 
@@ -109,73 +122,73 @@ class Math:
     def define(cls, func, name):
         exec(f'cls.{name} = newfunc(func, name)', {
             'cls': cls, 
-            'newfunc': newfunc, 
+            'newfunc': Constructor.newfunc, 
             'func': func, 
             'name': name})
 
     # basic
-    root = newfunc(lambda x, y: x ** (1 / y), 'root')
-    sqrt = newfunc(cmath.sqrt, 'sqrt')
-    cbrt = newfunc(lambda x: x ** (1 / 3), 'cbrt')
-    log = newfunc(cmath.log, 'log')
-    fact = newfunc(Utils.factorial, 'fact')
+    root = Constructor.newfunc(lambda x, y: x ** (1 / y), 'root')
+    sqrt = Constructor.newfunc(cmath.sqrt, 'sqrt')
+    cbrt = Constructor.newfunc(lambda x: x ** (1 / 3), 'cbrt')
+    log = Constructor.newfunc(cmath.log, 'log')
+    fact = Constructor.newfunc(Utils.factorial, 'fact')
 
     # numtype
-    int = newfunc(int, 'int')
-    float = newfunc(float, 'float')
+    int = Constructor.newfunc(int, 'int')
+    float = Constructor.newfunc(float, 'float')
 
     # permutation combinations
-    comb = newfunc(math.comb, 'comb')
-    perm = newfunc(math.perm, 'perm')
+    comb = Constructor.newfunc(math.comb, 'comb')
+    perm = Constructor.newfunc(math.perm, 'perm')
 
     # lcg anf gcd
-    lcm = newfunc(math.lcm, 'lcg')
-    gcd = newfunc(math.gcd, 'gcd')
+    lcm = Constructor.newfunc(math.lcm, 'lcg')
+    gcd = Constructor.newfunc(math.gcd, 'gcd')
 
     # trigonometry
-    sin = newfunc(cmath.sin, 'sin')
-    cos = newfunc(cmath.cos, 'cos')
-    tan = newfunc(cmath.tan, 'tan')
-    asin = newfunc(cmath.asin, 'asin')
-    acos = newfunc(cmath.acos, 'acos')
-    atan = newfunc(cmath.atan, 'atan')
-    dist = newfunc(Utils.dist, 'dist')
-    hypot = newfunc(lambda *args: cmath.sqrt(sum((x ** 2 for x in args))), 'hypot')
+    sin = Constructor.newfunc(cmath.sin, 'sin')
+    cos = Constructor.newfunc(cmath.cos, 'cos')
+    tan = Constructor.newfunc(cmath.tan, 'tan')
+    asin = Constructor.newfunc(cmath.asin, 'asin')
+    acos = Constructor.newfunc(cmath.acos, 'acos')
+    atan = Constructor.newfunc(cmath.atan, 'atan')
+    dist = Constructor.newfunc(Utils.dist, 'dist')
+    hypot = Constructor.newfunc(lambda *args: cmath.sqrt(sum((x ** 2 for x in args))), 'hypot')
 
     # angle
-    radtodeg = newfunc(lambda x: cmath.pi / 180 * x, 'rtd')
-    gradtodeg = newfunc(lambda x: x * 400 / 360, 'gtd')
-    degtorad = newfunc(lambda x: 180 / cmath.pi * x, 'dtr')
-    gradtorad = newfunc(lambda x: 240 / cmath.pi * x, 'gtr')
-    degtograd = newfunc(lambda x: x * 360 / 400, 'dtg')
-    radtograd = newfunc(lambda x: cmath.pi / 240 * x, 'rtd')
+    radtodeg = Constructor.newfunc(lambda x: cmath.pi / 180 * x, 'rtd')
+    gradtodeg = Constructor.newfunc(lambda x: x * 400 / 360, 'gtd')
+    degtorad = Constructor.newfunc(lambda x: 180 / cmath.pi * x, 'dtr')
+    gradtorad = Constructor.newfunc(lambda x: 240 / cmath.pi * x, 'gtr')
+    degtograd = Constructor.newfunc(lambda x: x * 360 / 400, 'dtg')
+    radtograd = Constructor.newfunc(lambda x: cmath.pi / 240 * x, 'rtd')
 
     # hyperbolic
-    sinh = newfunc(cmath.sinh, 'sinh')
-    cosh = newfunc(cmath.cosh, 'cosh')
-    tanh = newfunc(cmath.tanh, 'tanh')
-    asinh = newfunc(cmath.asinh, 'asinh')
-    acosh = newfunc(cmath.acosh, 'acosh')
-    atanh = newfunc(cmath.atanh, 'atanh')
+    sinh = Constructor.newfunc(cmath.sinh, 'sinh')
+    cosh = Constructor.newfunc(cmath.cosh, 'cosh')
+    tanh = Constructor.newfunc(cmath.tanh, 'tanh')
+    asinh = Constructor.newfunc(cmath.asinh, 'asinh')
+    acosh = Constructor.newfunc(cmath.acosh, 'acosh')
+    atanh = Constructor.newfunc(cmath.atanh, 'atanh')
 
     # random
-    rand = newfunc(random.randint, 'rand')
-    choose = newfunc(lambda *args: random.choice(args), 'choose')
-    wchoose = newfunc(Utils.wchoose, 'wchoose')
+    rand = Constructor.newfunc(random.randint, 'rand')
+    choose = Constructor.newfunc(lambda *args: random.choice(args), 'choose')
+    wchoose = Constructor.newfunc(Utils.wchoose, 'wchoose')
 
     # complex
-    complex = newfunc(complex, 'complex')
-    real = newfunc(lambda x: x.real, 'real')
-    imag = newfunc(lambda x: x.imag, 'imag')
-    conjugate = newfunc(lambda x: x.conjugate(), 'conjugate')
-    phase = newfunc(cmath.phase, 'phase')
-    modulus = newfunc(lambda x: cmath.polar(x)[0], 'modulus')
-    rect = newfunc(cmath.rect, 'rect')
+    complex = Constructor.newfunc(complex, 'complex')
+    real = Constructor.newfunc(lambda x: x.real, 'real')
+    imag = Constructor.newfunc(lambda x: x.imag, 'imag')
+    conjugate = Constructor.newfunc(lambda x: x.conjugate(), 'conjugate')
+    phase = Constructor.newfunc(cmath.phase, 'phase')
+    modulus = Constructor.newfunc(lambda x: cmath.polar(x)[0], 'modulus')
+    rect = Constructor.newfunc(cmath.rect, 'rect')
 
     # logic
-    bool = newfunc(bool, 'bool')
-    logicand = newfunc(lambda *args: all(map(bool, args)), 'and')
-    logicor = newfunc(lambda *args: any(map(bool, args)), 'or')
-    logicnot = newfunc(lambda x: not bool(x), 'not')
-    logicxor = newfunc(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
-    branch = newfunc(Utils.branch, 'branch')
+    bool = Constructor.newfunc(bool, 'bool')
+    logicand = Constructor.newfunc(lambda *args: all(map(bool, args)), 'and')
+    logicor = Constructor.newfunc(lambda *args: any(map(bool, args)), 'or')
+    logicnot = Constructor.newfunc(lambda x: not bool(x), 'not')
+    logicxor = Constructor.newfunc(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
+    branch = Constructor.newfunc(Utils.branch, 'branch')

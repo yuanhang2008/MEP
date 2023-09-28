@@ -12,8 +12,6 @@ from .production import *
 from.formula import Formula, unlock, relock
 
 
-ArgType = TypeVar('ArgType', int, float, complex, bool)
-
 def args_type_check(args):
     num_count = formula_count = production_count = 0
     for arg in args:

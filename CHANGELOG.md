@@ -9,7 +9,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 No changes.
 
-## [1.1.1]
+## [1.1.1] - 2023-9-28
 
 ### Added
 

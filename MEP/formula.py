@@ -22,7 +22,6 @@ def _get_tree_type(tree):
             if tree.get('S', None) is not None: return 'S*'
             if tree.get('V', None) is not None: return 'OVl'
             if tree.get('L', None) is not None: return 'LORl'
-        print(tree)
         raise ValueError(f'bad tree was given')
 
 def _name_check(name: str) -> 'Formula' | NoReturn:

@@ -5,7 +5,7 @@ import cmath
 import math
 import random
 from string import ascii_lowercase as letters
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable
 
 from .production import *
 

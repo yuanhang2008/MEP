@@ -22,7 +22,7 @@ def _get_tree_type(tree):
             if tree.get('S', None) is not None: return 'S*'
             if tree.get('V', None) is not None: return 'OVl'
             if tree.get('L', None) is not None: return 'LORl'
-        
+        print(tree)
         raise ValueError(f'bad tree was given')
 
 def _name_check(name: str) -> 'Formula' | NoReturn:
@@ -31,18 +31,18 @@ def _name_check(name: str) -> 'Formula' | NoReturn:
         raise ValueError(f'No such a formula named {name}')
     return formula
 
-def call_with_name(name: str, **kwargs) -> 'Expression' | NoReturn:
+def call(name: str, **kwargs) -> 'Expression' | NoReturn:
     formula = _name_check(name)
     return formula.subs(**kwargs)
 
-def get_formula(name: str) -> 'Formula' | NoReturn:
+def get(name: str) -> 'Formula' | NoReturn:
     formula = _name_check(name)
     return formula
 
 class Formula:
 
     def __init__(self, production: Production, name: str =...) -> None:
-        self._formula = _Formula(production, name)
+        self._formula = _Formula(production)
         if name is not ...:
             named_formulas[name] = self
     
@@ -125,7 +125,7 @@ class Expression:
 
 class _Formula:
 
-    def __init__(self, production: Production, name: str =...):
+    def __init__(self, production: Production):
         self._production = production
         unlock(self._production)
         if not isinstance(self._production, Production):

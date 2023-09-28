@@ -7,10 +7,10 @@ MEP: Mathematical expression processing.
 A tool to product, show or operate formulas.
 '''
 
-__version__ = '1.1.0'
+__version__ = '1.1.1'
 
 
-from .formula import Formula, call_with_name, get_formula
+from .formula import Formula, call, get
 
 from.draw import Draw
 from .math import Math
@@ -24,8 +24,8 @@ Z = Symbol('z')
 __all__ = [
     'X', 'Y', 'Z', 
     'Formula', 
-    'call_with_name', 
-    'get_formula', 
+    'call', 
+    'get', 
     'Draw', 
     'Math', 
     'Symbol', 

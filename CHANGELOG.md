@@ -7,10 +7,19 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
+No changes.
+
+## [1.1.1]
+
 ### Added
 
 - Change log.
-- Features in Development.
+- Support to merge formulas by functions in Math.
+
+### Changed
+
+- Change math function "conditions" name to "branch".
+- Change functions name "call_with_name" and "get_formula" to "call" and "get".
 
 ## [1.1.0] - 2023-9-16
 
@@ -198,7 +207,8 @@ The first version of MEP released (Versions prior to 0.2.0 are deprecated).
 - ```auto_install.bat``` instead pip.
 - Class ```Formula``` and ```Expression```.
 
-[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.0...HEAD
+[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.1...HEAD
+[1.1.1]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.0...MEP-v1.1.1
 [1.1.0]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.0.3...MEP-v1.1.0
 [1.0.3]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.0.2...MEP-v1.0.3
 [1.0.2]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.0.1...MEP-v1.0.2

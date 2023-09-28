@@ -128,10 +128,11 @@ Class ```Math``` provides with some special functions, which can participate in 
 
 ## Features in Development
 
-- [ ] merge formulas by functions in Math
+- [x] merge formulas by functions in Math
 - [ ] show functions images with tkinter
 - [ ] code for test (too lazy to write
 - [ ] analyze formulas, such as calculating definition domains
+- [ ] document strings
 - [ ] optimize the code  
 ...
 
@@ -153,4 +154,4 @@ Distributed under the terms of the [MIT License](https://github.com/yuanhang2008
 
 ## Change Log
 
-View the change log [here](https://github.com/yuanhang2008/MEP/blob/master/CHANGELOG.md).
+[ChangeLog](https://github.com/yuanhang2008/MEP/blob/master/CHANGELOG.md)

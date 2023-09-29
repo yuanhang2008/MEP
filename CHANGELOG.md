@@ -7,6 +7,10 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
+### Added
+
+- Document strings.
+
 ### Changed
 
 - Add newfunc and its subfunctions to the class Constructor.

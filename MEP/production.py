@@ -203,8 +203,21 @@ class Production:
     def __ror__(self, other): return Productor.product('|', other, self, 7, mode='2e')
 
 class Symbol(Production):
+    '''
+    Argument of formula.
 
-    def __init__(self, sign):
+    Args:
+        sign (str): The name of symbol.
+
+    Attributes:
+        _locked (bool): The lock that blocks access after new symbols are defined.
+        _sign (str): The name of symbol.
+    
+    Raises:
+        ValueError: The symbol sign is out of A-Z and a-z, or it has been occupied.
+    '''
+
+    def __init__(self, sign: str):
         self._locked: bool = True
         self._sign: str = sign
         unlock(self)
@@ -217,6 +230,12 @@ class Symbol(Production):
         relock(self)
     
     def get_sign(self) -> str:
+        '''
+        Return the sign of symbol.
+
+        Returns:
+            str: The sign of symbol.
+        '''
         unlock(self)
         sign = self._sign
         relock(self)

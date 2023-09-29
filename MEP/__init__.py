@@ -5,6 +5,15 @@
 MEP: Mathematical expression processing.
 
 A tool to product, show or operate formulas.
+
+Features include:
+    Formula: The basic feature of MEP, it products a formula similar to a function.
+    Expression: It is producted after substituting into formula.
+    Symbol: It is captured as a production, like an argument of function.
+    Draw: Mainly used for display formulas.
+    Math: Provide extra functinos.
+
+    etc.
 '''
 
 __version__ = '1.1.1'

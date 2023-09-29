@@ -117,9 +117,19 @@ class Utils:
         return args[-1]
 
 class Math:
+    '''
+    A set of functions that Provides additional arithmetic functions.
+    '''
 
     @classmethod
     def define(cls, func, name):
+        '''
+        Define a new math function.
+
+        Args:
+            func (Callable): the core of new function.
+            name (str): the name of new function.
+        '''
         exec(f'cls.{name} = newfunc(func, name)', {
             'cls': cls, 
             'newfunc': Constructor.newfunc, 

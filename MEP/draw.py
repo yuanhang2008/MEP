@@ -5,6 +5,7 @@ import random as rd
 
 import matplotlib.pyplot as plt
 
+
 COLOR = {
     '#000000', '#000088','#0000ff', '#008800', '#008888', '#0088ff', '#00ff00', '#00ff88', '#00ffff', 
     '#880000', '#880088','#8800ff', '#888800', '#888888', '#8888ff', '#88ff00', '#88ff88', '#88ffff', 
@@ -43,8 +44,8 @@ class Drawer:
         self._funcs = []
     
     def _setprec(self, value):
-        if type(value) != int:
-            raise ValueError(f'precision must be int, not {type(value).__name__}')
+        if type(value) != int or value <= 0:
+            raise ValueError(f'precision must be postive int, not {type(value).__name__} {value}')
         self._precision = value
 
     def _add_func(self, formula, range_):
@@ -88,17 +89,43 @@ class Drawer:
         plt.show()
 
 class Draw:
+    '''
+    Control formulas showing.
+
+    Attributes:
+        _drawer (Drawer): The main controller of drawing.
+    '''
 
     _drawer = Drawer()
 
     @classmethod
     def display(cls):
+        '''
+        Show all formulas in cache.
+
+        Raises:
+            ValeuError:
+                The first term of range of formula is greater than the second term, 
+                or a formula is with more than 1 symbol.
+        '''
         cls._drawer._show()
     
     @classmethod
-    def setprec(cls, value):
+    def setprec(cls, value: int):
+        '''
+        Reset the precision of drawing.
+
+        Args:
+            value (int): New precision.
+
+        Raises:
+            ValeuError: Precision is not a positive integer.
+        '''
         cls._drawer._setprec(value)
     
     @classmethod
     def clear(cls):
+        '''
+        Clear the formulas in cache.
+        '''
         cls._drawer._funcs.clear()

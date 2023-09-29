@@ -31,14 +31,49 @@ def _name_check(name: str) -> 'Formula' | NoReturn:
     return formula
 
 def call(name: str, **kwargs) -> 'Expression' | NoReturn:
+    '''
+    Call a named formula with arguments.
+
+    Args:
+        name (str): The name of formula to be call.
+        **kwargs: The arguments to call the formula.
+    
+    Returns:
+        Expression: Expression after substituting into the formula.
+    
+    Raises:
+        ValueError: There is no formula that matches the name.
+    '''
     formula = _name_check(name)
     return formula.subs(**kwargs)
 
 def get(name: str) -> 'Formula' | NoReturn:
+    '''
+    Get a formula matches the name.
+
+    Args:
+        name (str): The name of formula to be match.
+    
+    Returns:
+        Formula: Formula that matches the name.
+    
+    Raises:
+        ValueError: There is no formula that matches the name.
+    '''
     formula = _name_check(name)
     return formula
 
 class Formula:
+    '''
+    Math expression with arguments.
+
+    Args:
+        production (Production): The expression with arguments.
+        name (str): Name of a formula.
+
+    Attributes:
+        _formula (_Formula): The corresponding unencapsulated object to formula.
+    '''
 
     def __init__(self, production: Production, name: str =...) -> None:
         self._formula = _Formula(production)
@@ -46,18 +81,64 @@ class Formula:
             named_formulas[name] = self
     
     def subs(self, **kwargs) -> 'Expression':
+        '''
+        Substituting arguments into formula.
+
+        Args:
+            **kwargs: The value of each arguments.
+        
+        Returns:
+            Expression: Math expression after substituting.
+        
+        Raises:
+            ValueError: 
+                The given arguments does not match formula's argument set, 
+                or non-numeric type is given.
+        '''
         return self._formula._subs(**kwargs)
     
     def draw(self, range_: tuple) -> None:
+        '''
+        Store formula in the cache to show.
+
+        Args:
+            range_ (tuple[int]): The start point and end point that formula shows.
+        '''
         self._formula._draw(range_)
 
     def curry(self, **kwargs) -> 'Formula':
+        '''
+        Fixed partial arguments and curry the formula.
+
+        Args:
+            **kwargs: The value of arguments that fixed.
+        
+        Returns:
+            Formula: Formula with unfixed arguments after currying.
+        
+        Raises:
+            ValueError:
+                The given arguments does not match formula's argument set, 
+                or non-numeric type is given.
+        '''
         return self._formula._curry(**kwargs)
 
     def text(self) -> str:
+        '''
+        Represent formula mathematically.
+
+        Returns:
+            str: Mathematical text of formula.
+        '''
         return self._formula._text()
 
     def __str__(self):
+        '''
+        Literal of formula.
+
+        Returns:
+            str: a literal value of formula with its arguments and mathematical text.
+        '''
         return self._formula.__str__()
     
     # functions with 1 element
@@ -109,17 +190,48 @@ class Formula:
     def __ror__(self, other): return self._formula.__ror__(other)
 
 class Expression:
+    '''
+    Mathematical expression for pure numbers.
 
-    def __init__(self, func: Callable[[dict], Any], exp: str,kwargs: dict, args: set, tree) -> None:
+    Args:
+        func (Callable): Function for calculating value.
+        exp (str): Mathematical text.
+        kwargs (dict): arguments that substituting.
+        args (set): argument set of corresponding formula.
+        tree: The tree structure of formula operations.
+
+    Attributes:
+        _fexpression (_Expression): The corresponding unencapsulated object to expression.
+    '''
+
+    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree) -> None:
         self._expression = _Expression(func, exp, kwargs, args, tree)
 
     def value(self) -> int | float | complex | bool:
+        '''
+        Return the value of expression.
+
+        Returns:
+            int | float | complex | bool: The value of expression after calculating.
+        '''
         return self._expression._value()
     
     def text(self) -> str:
+        '''
+        Represent expression mathematically.
+
+        Returns:
+            str: Mathematical text of expression.
+        '''
         return self._expression._text()
     
     def __str__(self) -> str:
+        '''
+        Literal of expression.
+
+        Returns:
+            str: a literal value of expression with its arguments of formula and mathematical text.
+        '''
         return self._expression.__str__()
 
 class _Formula:
@@ -141,7 +253,7 @@ class _Formula:
     def _subs(self, **kwargs):
         args = {key for key in kwargs}
         if args != self._args:
-            raise ValueError(f'substitution takes {len(self._args)} arguments, be {len(args)} was given')
+            raise ValueError(f'arguments do not match')
         return Expression(self._func, self._exp, kwargs, self._args, self._tree)
 
     def _draw(self, range_: tuple):
@@ -189,6 +301,8 @@ class _Formula:
         args = set(tuple(self._args))
         tree = self._tree_curry(self._tree, kwargs)
         for key in kwargs:
+            if key not in args:
+                raise ValueError(f'arguments do not match')
             args.remove(key)
 
         def wapper(kwargs_):

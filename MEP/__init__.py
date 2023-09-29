@@ -16,7 +16,7 @@ Features include:
     etc.
 '''
 
-__version__ = '1.1.1'
+__version__ = '1.1.2'
 
 
 from .formula import Formula, call, get

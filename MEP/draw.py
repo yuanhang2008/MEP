@@ -5,12 +5,8 @@ import random as rd
 
 import matplotlib.pyplot as plt
 
+from .config import *
 
-COLOR = {
-    '#000000', '#000088','#0000ff', '#008800', '#008888', '#0088ff', '#00ff00', '#00ff88', '#00ffff', 
-    '#880000', '#880088','#8800ff', '#888800', '#888888', '#8888ff', '#88ff00', '#88ff88', '#88ffff', 
-    '#ff0000', '#ff0088','#ff00ff', '#ff8800', '#ff8888', '#ff88ff', '#ffff00', '#ffff88', '#ffffff'
-}
 
 def strcolor(color: tuple):
     strc = '#'
@@ -22,8 +18,8 @@ def color(num: int):
     if type(num) != int:
         raise TypeError(f'argument num must be an int, not {type(num)}')
     result = []
-    if num <= len(COLOR):
-        colors = set(tuple(COLOR))
+    if num <= len(DEFULT_COLORS):
+        colors = set(tuple(DEFULT_COLORS))
         for _ in range(num):
             c = rd.choice(list(colors))
             colors.remove(c)
@@ -31,7 +27,7 @@ def color(num: int):
         return result
     while num: 
         c = (rd.randint(0, 255), rd.randint(0, 255), rd.randint(0, 255))
-        if (c := strcolor(c)) in COLOR:
+        if (c := strcolor(c)) in DEFULT_COLORS:
             continue
         result.append(c)
         num -= 1
@@ -40,7 +36,7 @@ def color(num: int):
 class Drawer:
 
     def __init__(self):
-        self._precision = 640
+        self._precision = PRECISION
         self._funcs = []
     
     def _setprec(self, value):

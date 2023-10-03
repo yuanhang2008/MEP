@@ -9,7 +9,26 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 No changes.
 
-## [1.1.2]
+## [1.1.3]
+
+### Added
+
+- config.py.
+
+### Changed
+
+- rename COLOR to DEFULT_COLORS.
+- Merge expressions by operators(unfinished).
+
+### Fixed
+
+- _cache attribute in Expression controls the maximum length.
+
+### Removed
+
+- Remove the using of draw(because there is soething unavoidable bugs, but code is kept).
+
+## [1.1.2] - 2023-9-29
 
 ### Added
 
@@ -217,7 +236,8 @@ The first version of MEP released (Versions prior to 0.2.0 are deprecated).
 - ```auto_install.bat``` instead pip.
 - Class ```Formula``` and ```Expression```.
 
-[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.2...HEAD
+[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.3...HEAD
+[1.1.3]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.2...MEP-v1.1.3
 [1.1.2]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.1...MEP-v1.1.2
 [1.1.1]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.0...MEP-v1.1.1
 [1.1.0]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.0.3...MEP-v1.1.0

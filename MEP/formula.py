@@ -2,11 +2,12 @@
 
 
 import math
-from typing import Any, Callable, List, NoReturn
+from typing import Any, Callable, NoReturn
 
+from .config import *
 from .production import Production, relock, unlock
 
-from.draw import Draw
+# from.draw import Draw
 
 
 named_formulas: dict = {}
@@ -97,14 +98,14 @@ class Formula:
         '''
         return self._formula._subs(**kwargs)
     
-    def draw(self, range_: tuple) -> None:
-        '''
-        Store formula in the cache to show.
-
-        Args:
-            range_ (tuple[int]): The start point and end point that formula shows.
-        '''
-        self._formula._draw(range_)
+    #def draw(self, range_: tuple) -> None:
+    #    '''
+    #    Store formula in the cache to show.
+    #
+    #    Args:
+    #        range_ (tuple[int]): The start point and end point that formula shows.
+    #    '''
+    #    self._formula._draw(range_)
 
     def curry(self, **kwargs) -> 'Formula':
         '''
@@ -233,6 +234,54 @@ class Expression:
             str: a literal value of expression with its arguments of formula and mathematical text.
         '''
         return self._expression.__str__()
+    
+    # functions with 1 element
+    def __abs__(self): return self._expression.__abs__()
+    def __floor__(self): return self._expression.__floor__()
+    def __ceil__(self): return self._expression.__ceil__()
+    def __trunc__(self): return self._expression.__trunc__()
+
+    # functions with 2 elements
+    def __round__(self, arg=None): return self._expression.__round__(arg)
+
+    # operators with 1 element
+    def __pos__(self): return self._expression.__pos__()
+    def __neg__(self): return self._expression.__neg__()
+    def __invert__(self): return self._expression.__invert__()
+
+    # operators with 2 elements
+    def __add__(self, other): return self._expression.__add__(other)
+    def __sub__(self, other): return self._expression.__sub__(other)
+    def __mul__(self, other): return self._expression.__mul__(other)
+    def __floordiv__(self, other): return self._expression.__floordiv__(other)
+    def __truediv__(self, other): return self._expression.__truediv__(other)
+    def __mod__(self, other): return self._expression.__mod__(other)
+    def __pow__(self, other): return self._expression.__pow__(other)
+    def __lshift__(self, other): return self._expression.__lshift__(other)
+    def __rshift__(self, other): return self._expression.__rshift__(other)
+    def __and__(self, other): return self._expression.__and__(other)
+    def __xor__(self, other): return self._expression.__xor__(other)
+    def __or__(self, other): return self._expression.__or__(other)
+    def __eq__(self, other): return self._expression.__eq__(other)
+    def __ne__(self, other): return self._expression.__ne__(other)
+    def __lt__(self, other): return self._expression.__lt__(other)
+    def __gt__(self, other): return self._expression.__gt__(other)
+    def __le__(self, other): return self._expression.__le__(other)
+    def __ge__(self, other): return self._expression.__ge__(other)
+    
+    # operator with 2 elements(r-mod)
+    def __radd__(self, other): return self._expression.__radd__(other)
+    def __rsub__(self, other): return self._expression.__rsub__(other)
+    def __rmul__(self, other): return self._expression.__rmul__(other)
+    def __rfloordiv__(self, other): return self._expression.__rfloordiv__(other)
+    def __rtruediv__(self, other): return self._expression.__rtruediv__(other)
+    def __rmod__(self, other): return self._expression.__rmod__(other)
+    def __rpow__(self, other): return self._expression.__rpow__(other)
+    def __rlshift__(self, other): return self._expression.__rlshift__(other)
+    def __rrshift__(self, other): return self._expression.__rrshift__(other)
+    def __rand__(self, other): return self._expression.__rand__(other)
+    def __rxor__(self, other): return self._expression.__rxor__(other)
+    def __ror__(self, other): return self._expression.__ror__(other)
 
 class _Formula:
 
@@ -256,8 +305,8 @@ class _Formula:
             raise ValueError(f'arguments do not match')
         return Expression(self._func, self._exp, kwargs, self._args, self._tree)
 
-    def _draw(self, range_: tuple):
-        Draw._drawer._add_func(self, range_)
+    # def _draw(self, range_: tuple):
+    #     Draw._drawer._add_func(self, range_)
     
     def _get_exp(self, tree: dict | str | Any, level=0):
         tree_type = _get_tree_type(tree)
@@ -391,30 +440,15 @@ class _Formula:
 
 class _Expression:
 
-    _cache: List = []
-
     def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree):
         self._exp = exp
         self._kwargs = kwargs
         self._func = func
         self._args = args
         self._tree = self._get_tree(tree, kwargs)
-        self._result = self._func(self._kwargs)
 
-    def _value(self):
-        item: tuple
-        flag = False
-        for item in self._cache:
-            if item[0] != self._exp: continue
-            for arg in self._kwargs:
-                if self._kwargs.get(arg, None) != item[1][arg]: 
-                    flag = True
-                    break
-            if flag: continue
-            return item[2]
-        
-        self._cache.append((self._exp, self._kwargs, self._result))    
-        return self._result
+    def _value(self):     
+        return self._func(self._kwargs)
     
     def _get_tree(self, tree: dict | str | Any, kwargs: dict):
         tree_type = _get_tree_type(tree)
@@ -454,3 +488,52 @@ class _Expression:
     def __str__(self):
         fargs = [f'{key}={self._kwargs[key]}, ' for key in self._kwargs]
         return f'<Expression f({"".join(fargs)[:-2]})={self._text()}>'
+    
+    # unfinished
+    # functions with 1 element
+    def __abs__(self): return self._expression.__abs__()
+    def __floor__(self): return self._expression.__floor__()
+    def __ceil__(self): return self._expression.__ceil__()
+    def __trunc__(self): return self._expression.__trunc__()
+
+    # functions with 2 elements
+    def __round__(self, arg=None): return self._expression.__round__(arg)
+
+    # operators with 1 element
+    def __pos__(self): return self._expression.__pos__()
+    def __neg__(self): return self._expression.__neg__()
+    def __invert__(self): return self._expression.__invert__()
+
+    # operators with 2 elements
+    def __add__(self, other): return self._expression.__add__(other)
+    def __sub__(self, other): return self._expression.__sub__(other)
+    def __mul__(self, other): return self._expression.__mul__(other)
+    def __floordiv__(self, other): return self._expression.__floordiv__(other)
+    def __truediv__(self, other): return self._expression.__truediv__(other)
+    def __mod__(self, other): return self._expression.__mod__(other)
+    def __pow__(self, other): return self._expression.__pow__(other)
+    def __lshift__(self, other): return self._expression.__lshift__(other)
+    def __rshift__(self, other): return self._expression.__rshift__(other)
+    def __and__(self, other): return self._expression.__and__(other)
+    def __xor__(self, other): return self._expression.__xor__(other)
+    def __or__(self, other): return self._expression.__or__(other)
+    def __eq__(self, other): return self._expression.__eq__(other)
+    def __ne__(self, other): return self._expression.__ne__(other)
+    def __lt__(self, other): return self._expression.__lt__(other)
+    def __gt__(self, other): return self._expression.__gt__(other)
+    def __le__(self, other): return self._expression.__le__(other)
+    def __ge__(self, other): return self._expression.__ge__(other)
+    
+    # operator with 2 elements(r-mod)
+    def __radd__(self, other): return self._expression.__radd__(other)
+    def __rsub__(self, other): return self._expression.__rsub__(other)
+    def __rmul__(self, other): return self._expression.__rmul__(other)
+    def __rfloordiv__(self, other): return self._expression.__rfloordiv__(other)
+    def __rtruediv__(self, other): return self._expression.__rtruediv__(other)
+    def __rmod__(self, other): return self._expression.__rmod__(other)
+    def __rpow__(self, other): return self._expression.__rpow__(other)
+    def __rlshift__(self, other): return self._expression.__rlshift__(other)
+    def __rrshift__(self, other): return self._expression.__rrshift__(other)
+    def __rand__(self, other): return self._expression.__rand__(other)
+    def __rxor__(self, other): return self._expression.__rxor__(other)
+    def __ror__(self, other): return self._expression.__ror__(other)

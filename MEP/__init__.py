@@ -21,7 +21,7 @@ __version__ = '1.1.2'
 
 from .formula import Formula, call, get
 
-from.draw import Draw
+# from.draw import Draw
 from .math import Math
 from .production import Symbol, symbols
 
@@ -35,8 +35,7 @@ __all__ = [
     'Formula', 
     'call', 
     'get', 
-    'Draw', 
     'Math', 
     'Symbol', 
-    'symbols'
+    'symbols' # removed class Draw
 ]

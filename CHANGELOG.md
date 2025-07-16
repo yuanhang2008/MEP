@@ -7,22 +7,32 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
-No changes.
+### Added
+
+- Add requirement.txt
+
+### Fixed
+
+- Ignore ".vscode" folder
+
+### Removed
+
+- Remove "auto_install_1.bat" && "auto_install_2.bat". MEP needs to be installed manually now.
 
 ## [1.1.3]
 
 ### Added
 
-- config.py.
+- Add config.py.
 
 ### Changed
 
-- rename COLOR to DEFULT_COLORS.
+- Rename COLOR to DEFULT_COLORS.
 - Merge expressions by operators(unfinished).
 
 ### Fixed
 
-- _cache attribute in Expression controls the maximum length.
+- "_cache" attribute in Expression controls the maximum length.
 
 ### Removed
 
@@ -63,7 +73,7 @@ No changes.
 
 ## Removed
 
-- remove ```setmax``` in ```Draw```. 
+- Remove ```setmax``` in ```Draw```. 
 
 ### Fixed
 

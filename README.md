@@ -1,10 +1,8 @@
 # MEP
 
+***Mathematical Expression Parsing***
+
 ![License](https://img.shields.io/badge/license-MIT-green) ![Language](https://img.shields.io/badge/language-Py3.11-blue) ![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP%2Freleases%2Flatest&query=name&label=version&color=red)  ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP&query=stargazers_count&label=stars&color=yellow)
-
-
-
-***Mathematical Expression Parsing.***
 
 ## Stargazers over time
 
@@ -12,8 +10,17 @@
 
 ## install
 
-Run ```auto_install_1.bat``` to install MEP, if it doesn't work, try enter ```pip install setuptools``` and ```pip install wheel``` to install the two necessary libraries, please. 
-```auto_install_2.bat``` can install MEP as a temporary modules, you can use it if you are just here to test the library or try some features, not at work or important occasions.
+In the directory of MEP:
+
+```
+pip install .
+```
+
+or use ```setup.py``` to install:
+
+```
+python setup.py install
+```
 
 ## usage
 
@@ -128,12 +135,11 @@ Class ```Math``` provides with some special functions, which can participate in 
 
 ## Features in Development
 
-- [x] merge formulas by functions in Math
 - [ ] show functions images with tkinter
 - [ ] code for test (too lazy to write
 - [ ] analyze formulas, such as calculating definition domains
-- [x] document strings
 - [ ] optimize the code  
+- [ ] "README.md" for Chinese
 ...
 
 ## Bugs/Requests
@@ -142,7 +148,7 @@ Please send bug reports and feature requests through [github issue tracker](http
 
 ## About Author
 
-Bilbili: [l_yuanhang_l](https://space.bilibili.com/1449535398)
+Bilbili: [航sail654](https://space.bilibili.com/3546938777537032)
 Github: [yuanhang2008](https://github.com/yuanhang2008)
 QQ: [远航](https://user.qzone.qq.com/3467359137)
 

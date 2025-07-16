@@ -137,21 +137,19 @@ class Math:
             'name': name})
 
     # basic
+    int = Constructor.newfunc(int, 'int')
+    float = Constructor.newfunc(float, 'float')
     root = Constructor.newfunc(lambda x, y: x ** (1 / y), 'root')
     sqrt = Constructor.newfunc(cmath.sqrt, 'sqrt')
     cbrt = Constructor.newfunc(lambda x: x ** (1 / 3), 'cbrt')
     log = Constructor.newfunc(cmath.log, 'log')
     fact = Constructor.newfunc(Utils.factorial, 'fact')
 
-    # numtype
-    int = Constructor.newfunc(int, 'int')
-    float = Constructor.newfunc(float, 'float')
-
     # permutation combinations
     comb = Constructor.newfunc(math.comb, 'comb')
     perm = Constructor.newfunc(math.perm, 'perm')
 
-    # lcg anf gcd
+    # lcg and gcd
     lcm = Constructor.newfunc(math.lcm, 'lcg')
     gcd = Constructor.newfunc(math.gcd, 'gcd')
 

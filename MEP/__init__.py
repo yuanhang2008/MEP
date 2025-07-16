@@ -37,5 +37,5 @@ __all__ = [
     'get', 
     'Math', 
     'Symbol', 
-    'symbols' # removed class Draw
-]
+    'symbols'
+] # removed class Draw

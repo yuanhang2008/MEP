@@ -9,15 +9,17 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ### Added
 
-- Add requirement.txt
+- Add requirement.txt.
+- Add "README-cn.md" in Chinese.
 
 ### Fixed
 
-- Ignore ".vscode" folder
+- Ignore ".vscode" folder.
 
 ### Removed
 
 - Remove "auto_install_1.bat" && "auto_install_2.bat". MEP needs to be installed manually now.
+- Remove "draw" feature, but "draw.py" is kept.
 
 ## [1.1.3]
 

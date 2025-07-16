@@ -44,6 +44,17 @@ Formula objects are printable and ```__str__``` method is defined, but ```text``
 '2*x-1'
 ```
 
+#### curry
+
+```curry``` method can curry a formula and return the curried formula.
+
+```python
+>>>f1 = MEP.Formula(X + Y)
+>>>f2 = f1.curry(x=2)
+>>>print(f2.text())
+2+y
+```
+
 ### symbol
 
 A ```Symbol``` object can be defined by users, a symbol's name must be a letter. 
@@ -64,34 +75,6 @@ Use variable ```symbols``` to get all defined symbols's sign, you can also visit
 >>>A.sign
 'a'
 ```
-
-### draw
-
-```Draw``` is used to draw a function plot in matplotlib.
-
-```python
->>>range_ = (-100, 100)
-
->>>f1 = Formula(2 * MEP.X + 1)
->>>f2 = Formula(MEP.X ** 2)
-
->>>f1.draw(range_)
->>>f2.draw(range_)
-
->>>Draw.display()
-```
-
-More functions, such as ```clear```: clear all the formulas in Draw object.
-
-```python
->>>Draw.clear()
->>>Draw.display()
-# Nothing to show
-```
-
-```setprec```: set the precision of the plot. the larger the precision, the more detailed the plot, but the slower the program runs.
-
-However, drawing a formula contains multiple symbols is invalid.
 
 ### expression
 
@@ -120,26 +103,13 @@ Class ```Math``` provides with some special functions, which can participate in 
 3
 ```
 
-### curry
-
-```curry``` method can curry a formula and return the curried formula.
-
-```python
->>>f1 = MEP.Formula(X + Y)
->>>f2 = f1.curry(x=2)
->>>exp = f2.subs(y=3)
-
->>>exp.value
-5
-```
-
 ## Features in Development
 
-- [ ] show functions images with tkinter
-- [ ] code for test (too lazy to write
-- [ ] analyze formulas, such as calculating definition domains
-- [ ] optimize the code  
-- [ ] "README.md" for Chinese
+- [ ] Show functions images with tkinter.
+- [ ] Code for test (too lazy to write.
+- [ ] Analyze formulas, such as calculating definition domains.
+- [ ] Optimize the code.
+- [ ] Consider removing "draw" or verifying whether it is still required.
 ...
 
 ## Bugs/Requests

@@ -7,7 +7,11 @@ __pycache__/
 # C extensions
 *.so
 
+# VSCode folder
 .vscode/*
+
+# Test folder
+.test/*
 
 # Distribution / packaging
 .Python

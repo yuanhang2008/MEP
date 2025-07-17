@@ -9,19 +9,17 @@ from typing import Any, Callable, Set
 symbols: Set[str] = set()
 allows = ['get_sign']
 
-def unlock(*args):
-    production: Production
-    for production in args:
-        if isinstance(production, Production):
-            production._locked = False
+def unlock(*args: 'Production | Any'):
+    for item in args:
+        if isinstance(item, Production):
+            item._locked = False
 
-def relock(*args):
-    production: Production
-    for production in args:
-        if isinstance(production, Production):
-            production._locked = True
+def relock(*args: 'Production | Any'):
+    for item in args:
+        if isinstance(item, Production):
+            item._locked = True
 
-def get(value: 'Production'):
+def get_production_attributes(value: 'Production'):
     unlock(value)
     func = value._func
     tree = value._tree
@@ -54,7 +52,7 @@ class Productor:
     
     @classmethod
     def productfunc1e(cls, func_name, value):
-        func, tree, args = get(value)
+        func, tree, args = get_production_attributes(value)
         if func_name[:5] == 'math.':
             short_name = func_name[5:]
         else:
@@ -73,7 +71,7 @@ class Productor:
         else:
             short_name = func_name
         if (not is_productions[0]) and is_productions[1]:
-            func, tree, args = get(value2)
+            func, tree, args = get_production_attributes(value2)
             return Production(
                 eval(f'lambda kwargs: {func_name}(value1, func(kwargs))',
                     {'math': math, 
@@ -83,8 +81,8 @@ class Productor:
                 args)
 
         if is_productions[1]:
-            func1, tree1, args1 = get(value1)
-            func2, tree2, args2 = get(value2)
+            func1, tree1, args1 = get_production_attributes(value1)
+            func2, tree2, args2 = get_production_attributes(value2)
             return Production(
                 eval(f'lambda kwargs: {func_name}(func1(kwargs), func2(kwargs))',
                     {'math': math, 
@@ -93,7 +91,7 @@ class Productor:
                 {'S': short_name, 'a': tree1, 'b': tree2}, 
                 args1 | args2)
         else:
-            func, tree, args = get(value1)
+            func, tree, args = get_production_attributes(value1)
             return Production(
                 eval(f'lambda kwargs: {func_name}(func(kwargs), value2)',
                     {'math': math, 
@@ -104,7 +102,7 @@ class Productor:
     
     @classmethod
     def product1e(cls, operator, value, level):
-        func, tree, args = get(value)
+        func, tree, args = get_production_attributes(value)
         return Production(
             eval(f'lambda kwargs: {operator}func(kwargs)', 
                 {'func': func}), 
@@ -114,7 +112,7 @@ class Productor:
     @classmethod
     def product2e(cls, operator, left, right, is_productions, level):
         if (not is_productions[0]) and is_productions[1]:
-            func, tree, args = get(right)
+            func, tree, args = get_production_attributes(right)
             return Production(
                 eval(f'lambda kwargs: left {operator} func(kwargs)',
                     {'left': left,
@@ -123,8 +121,8 @@ class Productor:
                 args)
 
         if is_productions[1]:
-            lfunc, ltree, largs = get(left)
-            rfunc, rtree, rargs = get(right)
+            lfunc, ltree, largs = get_production_attributes(left)
+            rfunc, rtree, rargs = get_production_attributes(right)
             return Production(
                 eval(f'lambda kwargs: lfunc(kwargs) {operator} rfunc(kwargs)',
                     {'lfunc': lfunc,
@@ -132,7 +130,7 @@ class Productor:
                 {'L': ltree, 'O': operator, 'R': rtree, 'l': level}, 
                 largs | rargs)
         else:
-            func, tree, args = get(left)
+            func, tree, args = get_production_attributes(left)
             return Production(
                 eval(f'lambda kwargs: func(kwargs) {operator} right',
                     {'func': func,

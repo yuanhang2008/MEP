@@ -48,7 +48,7 @@ def call(name: str, **kwargs) -> 'Expression' | NoReturn:
     formula = _name_check(name)
     return formula.subs(**kwargs)
 
-def get(name: str) -> 'Formula' | NoReturn:
+def find(name: str) -> 'Formula' | NoReturn:
     '''
     Get a formula matches the name.
 

@@ -12,6 +12,10 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 - Add requirement.txt.
 - Add "README-cn.md" in Chinese.
 
+### Changed
+
+- rename function "get" to "find".
+
 ### Fixed
 
 - Ignore ".vscode" folder.

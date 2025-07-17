@@ -19,7 +19,7 @@ Features include:
 __version__ = '1.1.3'
 
 
-from .formula import Formula, call, get
+from .formula import Formula, call, find
 
 # from.draw import Draw
 from .math import Math
@@ -34,7 +34,7 @@ __all__ = [
     'X', 'Y', 'Z', 
     'Formula', 
     'call', 
-    'get', 
+    'find', 
     'Math', 
     'Symbol', 
     'symbols'

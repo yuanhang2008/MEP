@@ -6,13 +6,19 @@ import math
 import random
 from string import ascii_lowercase as letters
 from typing import Any, Callable
+from enum import Enum
 
 from .production import *
 
-from.formula import Formula, unlock, relock
+from .formula import Formula, unlock, relock
 
 
-class Constructor:
+class _ArgsType(Enum):
+        allnum = 'allnum'
+        production = 'production'
+        formula = 'formula'
+
+class _Constructor:
 
     @classmethod
     def _args_type_check(cls, args):
@@ -26,13 +32,13 @@ class Constructor:
                 production_count += 1
 
         if num_count == len(args):
-            return 'allnum'
+            return _ArgsType.allnum
         elif production_count and formula_count:
             raise TypeError('unsupported operand type(s) for this math functions: Formula and Production')
         elif production_count:
-            return 'prod'
+            return _ArgsType.production
         elif formula_count:
-            return 'form'
+            return _ArgsType.formula
 
     @classmethod
     def _construct_production(cls, func, args, name):
@@ -65,18 +71,18 @@ class Constructor:
         return Formula(production)
 
     @classmethod
-    def newfunc(cls, func: Callable, name: str):
+    def _func_construct_wrapper(cls, func: Callable, name: str):
         def wrapper(*args: Production | Formula | Any):
             match cls._args_type_check(args):
-                case 'allnum':
+                case _ArgsType.allnum:
                     return func(*args)
-                case 'prod':
+                case _ArgsType.production:
                     return cls._construct_production(func, args, name)
-                case 'form':
+                case _ArgsType.formula:
                     return cls._construct_formula(args, wrapper)
         return wrapper
 
-class Utils:
+class _NewMathFunction:
 
     @classmethod
     def factorial(cls, x):
@@ -132,71 +138,71 @@ class Math:
         '''
         exec(f'cls.{name} = newfunc(func, name)', {
             'cls': cls, 
-            'newfunc': Constructor.newfunc, 
+            'newfunc': _Constructor._func_construct_wrapper, 
             'func': func, 
             'name': name})
 
     # basic
-    int = Constructor.newfunc(int, 'int')
-    float = Constructor.newfunc(float, 'float')
-    root = Constructor.newfunc(lambda x, y: x ** (1 / y), 'root')
-    sqrt = Constructor.newfunc(cmath.sqrt, 'sqrt')
-    cbrt = Constructor.newfunc(lambda x: x ** (1 / 3), 'cbrt')
-    log = Constructor.newfunc(cmath.log, 'log')
-    fact = Constructor.newfunc(Utils.factorial, 'fact')
+    to_int: Formula | Production = _Constructor._func_construct_wrapper(int, 'int')
+    to_float = _Constructor._func_construct_wrapper(float, 'float')
+    root = _Constructor._func_construct_wrapper(lambda x, y: x ** (1 / y), 'root')
+    sqrt = _Constructor._func_construct_wrapper(cmath.sqrt, 'sqrt')
+    cbrt = _Constructor._func_construct_wrapper(lambda x: x ** (1 / 3), 'cbrt')
+    log = _Constructor._func_construct_wrapper(cmath.log, 'log')
+    fact = _Constructor._func_construct_wrapper(_NewMathFunction.factorial, 'fact')
 
     # permutation combinations
-    comb = Constructor.newfunc(math.comb, 'comb')
-    perm = Constructor.newfunc(math.perm, 'perm')
+    comb = _Constructor._func_construct_wrapper(math.comb, 'comb')
+    perm = _Constructor._func_construct_wrapper(math.perm, 'perm')
 
     # lcg and gcd
-    lcm = Constructor.newfunc(math.lcm, 'lcg')
-    gcd = Constructor.newfunc(math.gcd, 'gcd')
+    lcm = _Constructor._func_construct_wrapper(math.lcm, 'lcg')
+    gcd = _Constructor._func_construct_wrapper(math.gcd, 'gcd')
 
     # trigonometry
-    sin = Constructor.newfunc(cmath.sin, 'sin')
-    cos = Constructor.newfunc(cmath.cos, 'cos')
-    tan = Constructor.newfunc(cmath.tan, 'tan')
-    asin = Constructor.newfunc(cmath.asin, 'asin')
-    acos = Constructor.newfunc(cmath.acos, 'acos')
-    atan = Constructor.newfunc(cmath.atan, 'atan')
-    dist = Constructor.newfunc(Utils.dist, 'dist')
-    hypot = Constructor.newfunc(lambda *args: cmath.sqrt(sum((x ** 2 for x in args))), 'hypot')
+    sin = _Constructor._func_construct_wrapper(cmath.sin, 'sin')
+    cos = _Constructor._func_construct_wrapper(cmath.cos, 'cos')
+    tan = _Constructor._func_construct_wrapper(cmath.tan, 'tan')
+    asin = _Constructor._func_construct_wrapper(cmath.asin, 'asin')
+    acos = _Constructor._func_construct_wrapper(cmath.acos, 'acos')
+    atan = _Constructor._func_construct_wrapper(cmath.atan, 'atan')
+    dist = _Constructor._func_construct_wrapper(_NewMathFunction.dist, 'dist')
+    hypot = _Constructor._func_construct_wrapper(lambda *args: cmath.sqrt(sum((x ** 2 for x in args))), 'hypot')
 
     # angle
-    radtodeg = Constructor.newfunc(lambda x: cmath.pi / 180 * x, 'rtd')
-    gradtodeg = Constructor.newfunc(lambda x: x * 400 / 360, 'gtd')
-    degtorad = Constructor.newfunc(lambda x: 180 / cmath.pi * x, 'dtr')
-    gradtorad = Constructor.newfunc(lambda x: 240 / cmath.pi * x, 'gtr')
-    degtograd = Constructor.newfunc(lambda x: x * 360 / 400, 'dtg')
-    radtograd = Constructor.newfunc(lambda x: cmath.pi / 240 * x, 'rtd')
+    radtodeg = _Constructor._func_construct_wrapper(lambda x: cmath.pi / 180 * x, 'rtd')
+    gradtodeg = _Constructor._func_construct_wrapper(lambda x: x * 400 / 360, 'gtd')
+    degtorad = _Constructor._func_construct_wrapper(lambda x: 180 / cmath.pi * x, 'dtr')
+    gradtorad = _Constructor._func_construct_wrapper(lambda x: 240 / cmath.pi * x, 'gtr')
+    degtograd = _Constructor._func_construct_wrapper(lambda x: x * 360 / 400, 'dtg')
+    radtograd = _Constructor._func_construct_wrapper(lambda x: cmath.pi / 240 * x, 'rtd')
 
     # hyperbolic
-    sinh = Constructor.newfunc(cmath.sinh, 'sinh')
-    cosh = Constructor.newfunc(cmath.cosh, 'cosh')
-    tanh = Constructor.newfunc(cmath.tanh, 'tanh')
-    asinh = Constructor.newfunc(cmath.asinh, 'asinh')
-    acosh = Constructor.newfunc(cmath.acosh, 'acosh')
-    atanh = Constructor.newfunc(cmath.atanh, 'atanh')
+    sinh = _Constructor._func_construct_wrapper(cmath.sinh, 'sinh')
+    cosh = _Constructor._func_construct_wrapper(cmath.cosh, 'cosh')
+    tanh = _Constructor._func_construct_wrapper(cmath.tanh, 'tanh')
+    asinh = _Constructor._func_construct_wrapper(cmath.asinh, 'asinh')
+    acosh = _Constructor._func_construct_wrapper(cmath.acosh, 'acosh')
+    atanh = _Constructor._func_construct_wrapper(cmath.atanh, 'atanh')
 
     # random
-    rand = Constructor.newfunc(random.randint, 'rand')
-    choose = Constructor.newfunc(lambda *args: random.choice(args), 'choose')
-    wchoose = Constructor.newfunc(Utils.wchoose, 'wchoose')
+    rand = _Constructor._func_construct_wrapper(random.randint, 'rand')
+    choose = _Constructor._func_construct_wrapper(lambda *args: random.choice(args), 'choose')
+    wchoose = _Constructor._func_construct_wrapper(_NewMathFunction.wchoose, 'wchoose')
 
     # complex
-    complex = Constructor.newfunc(complex, 'complex')
-    real = Constructor.newfunc(lambda x: x.real, 'real')
-    imag = Constructor.newfunc(lambda x: x.imag, 'imag')
-    conjugate = Constructor.newfunc(lambda x: x.conjugate(), 'conjugate')
-    phase = Constructor.newfunc(cmath.phase, 'phase')
-    modulus = Constructor.newfunc(lambda x: cmath.polar(x)[0], 'modulus')
-    rect = Constructor.newfunc(cmath.rect, 'rect')
+    to_complex = _Constructor._func_construct_wrapper(complex, 'complex')
+    real = _Constructor._func_construct_wrapper(lambda x: 0j+x.real, 'real')
+    imag = _Constructor._func_construct_wrapper(lambda x: x.imag, 'imag')
+    conjugate = _Constructor._func_construct_wrapper(lambda x: x.conjugate(), 'conjugate')
+    phase = _Constructor._func_construct_wrapper(cmath.phase, 'phase')
+    modulus = _Constructor._func_construct_wrapper(lambda x: cmath.polar(x)[0], 'modulus')
+    rect = _Constructor._func_construct_wrapper(cmath.rect, 'rect')
 
     # logic
-    bool = Constructor.newfunc(bool, 'bool')
-    logicand = Constructor.newfunc(lambda *args: all(map(bool, args)), 'and')
-    logicor = Constructor.newfunc(lambda *args: any(map(bool, args)), 'or')
-    logicnot = Constructor.newfunc(lambda x: not bool(x), 'not')
-    logicxor = Constructor.newfunc(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
-    branch = Constructor.newfunc(Utils.branch, 'branch')
+    to_bool = _Constructor._func_construct_wrapper(bool, 'bool')
+    logicand = _Constructor._func_construct_wrapper(lambda *args: all(map(bool, args)), 'and')
+    logicor = _Constructor._func_construct_wrapper(lambda *args: any(map(bool, args)), 'or')
+    logicnot = _Constructor._func_construct_wrapper(lambda x: not bool(x), 'not')
+    logicxor = _Constructor._func_construct_wrapper(lambda x, y: (not (bool(x) and bool(y))) and (bool(x) or bool(y)), 'xor')
+    branch = _Constructor._func_construct_wrapper(_NewMathFunction.branch, 'branch')

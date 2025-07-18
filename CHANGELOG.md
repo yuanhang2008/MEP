@@ -7,6 +7,8 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
+## [1.1.4]
+
 ### Added
 
 - Add requirement.txt.

@@ -13,10 +13,12 @@ from .production import *
 from .formula import Formula, unlock, relock
 
 
+NumericValue = int | float | complex | bool
+
 class _ArgsType(Enum):
-        allnum = 'allnum'
-        production = 'production'
-        formula = 'formula'
+    ALLNUM = 'allnum'
+    PRODUCTION = 'production'
+    FORMULA = 'formula'
 
 class _Constructor:
 
@@ -32,13 +34,13 @@ class _Constructor:
                 production_count += 1
 
         if num_count == len(args):
-            return _ArgsType.allnum
+            return _ArgsType.ALLNUM
         elif production_count and formula_count:
             raise TypeError('unsupported operand type(s) for this math functions: Formula and Production')
         elif production_count:
-            return _ArgsType.production
+            return _ArgsType.PRODUCTION
         elif formula_count:
-            return _ArgsType.formula
+            return _ArgsType.FORMULA
 
     @classmethod
     def _construct_production(cls, func, args, name):
@@ -74,11 +76,11 @@ class _Constructor:
     def _func_construct_wrapper(cls, func: Callable, name: str):
         def wrapper(*args: Production | Formula | Any):
             match cls._args_type_check(args):
-                case _ArgsType.allnum:
+                case _ArgsType.ALLNUM:
                     return func(*args)
-                case _ArgsType.production:
+                case _ArgsType.PRODUCTION:
                     return cls._construct_production(func, args, name)
-                case _ArgsType.formula:
+                case _ArgsType.FORMULA:
                     return cls._construct_formula(args, wrapper)
         return wrapper
 

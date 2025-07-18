@@ -3,6 +3,7 @@
 
 import math
 from typing import Any, Callable, NoReturn
+from enum import Enum
 
 from .config import *
 from .production import Production, relock, unlock
@@ -10,28 +11,36 @@ from .production import Production, relock, unlock
 # from.draw import Draw
 
 
-named_formulas: dict = {}
+NumericValue = int | float | complex | bool
+named_formulas: 'dict[str, Formula]' = {}
 
-def _get_tree_type(tree):
-        if type(tree) == int or type(tree) == float or \
-        type(tree) == complex or type(tree) == bool: return 'n||b'
+class TreeType(Enum):
+    NUMERICVALUE = 'n||b'
+    STR = 'str'
+    FUNCTIONTREE = 'S*'
+    OPERATOR1ETREE = 'OVl'
+    OPERATOR2ETREE = 'LORl'
 
-        if type(tree) == str: return 'str'
-        if tree is None: return 'None'
-
-        if type(tree) == dict:
-            if tree.get('S', None) is not None: return 'S*'
-            if tree.get('V', None) is not None: return 'OVl'
-            if tree.get('L', None) is not None: return 'LORl'
+def _get_tree_type(tree: NumericValue | dict | str) -> TreeType:
+        if isinstance(tree, str): 
+            return TreeType.STR
+        
+        if isinstance(tree, NumericValue): 
+            return TreeType.NUMERICVALUE
+        
+        if isinstance(tree, dict):
+            if 'S' in set(tree.keys()): return TreeType.FUNCTIONTREE
+            if set(tree.keys()) == {'O', 'V', 'l'}: return TreeType.OPERATOR1ETREE
+            if set(tree.keys()) == {'L', 'O', 'R', 'l'}: return TreeType.OPERATOR2ETREE
         raise ValueError(f'bad tree was given')
 
-def _name_check(name: str) -> 'Formula' | NoReturn:
+def _name_check(name: str) -> 'Formula | NoReturn':
     formula: Formula | None = named_formulas.get(name, None)
     if formula is None:
         raise ValueError(f'No such a formula named {name}')
     return formula
 
-def call(name: str, **kwargs) -> 'Expression' | NoReturn:
+def call(name: str, **kwargs) -> 'Expression | NoReturn':
     '''
     Call a named formula with arguments.
 
@@ -48,7 +57,7 @@ def call(name: str, **kwargs) -> 'Expression' | NoReturn:
     formula = _name_check(name)
     return formula.subs(**kwargs)
 
-def find(name: str) -> 'Formula' | NoReturn:
+def find(name: str) -> 'Formula | NoReturn':
     '''
     Get a formula matches the name.
 
@@ -76,12 +85,12 @@ class Formula:
         _formula (_Formula): The corresponding unencapsulated object of formula.
     '''
 
-    def __init__(self, production: Production, name: str =...) -> None:
+    def __init__(self, production: Production, name: str | None=None) -> None:
         self._formula = _Formula(production)
-        if name is not ...:
+        if name is not None:
             named_formulas[name] = self
     
-    def subs(self, **kwargs) -> 'Expression':
+    def subs(self, **kwargs: dict[str, NumericValue]) -> 'Expression':
         '''
         Substituting arguments into formula.
 
@@ -107,7 +116,7 @@ class Formula:
     #    '''
     #    self._formula._draw(range_)
 
-    def curry(self, **kwargs) -> 'Formula':
+    def curry(self, **kwargs: dict[str, NumericValue]) -> 'Formula':
         '''
         Substituting partial arguments and currying the formula.
 
@@ -133,7 +142,7 @@ class Formula:
         '''
         return self._formula._text()
 
-    def __str__(self):
+    def __str__(self) -> str:
         '''
         Literal of formula.
 
@@ -149,7 +158,7 @@ class Formula:
     def __trunc__(self): return self._formula.__trunc__()
 
     # functions with 2 elements
-    def __round__(self, arg=None): return self._formula.__round__(arg)
+    def __round__(self, arg): return self._formula.__round__(arg)
 
     # operators with 1 element
     def __pos__(self): return self._formula.__pos__()
@@ -205,15 +214,15 @@ class Expression:
         _fexpression (_Expression): The corresponding unencapsulated object of expression.
     '''
 
-    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree) -> None:
+    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree: dict | str | NumericValue) -> None:
         self._expression = _Expression(func, exp, kwargs, args, tree)
 
-    def value(self) -> int | float | complex | bool:
+    def value(self) -> NumericValue:
         '''
         Return the value of expression.
 
         Returns:
-            int | float | complex | bool: The value of expression after calculating.
+            NumericValue: The value of expression after calculating.
         '''
         return self._expression._value()
     
@@ -242,7 +251,7 @@ class Expression:
     def __trunc__(self): return self._expression.__trunc__()
 
     # functions with 2 elements
-    def __round__(self, arg=None): return self._expression.__round__(arg)
+    def __round__(self, arg): return self._expression.__round__(arg)
 
     # operators with 1 element
     def __pos__(self): return self._expression.__pos__()
@@ -285,110 +294,110 @@ class Expression:
 
 class _Formula:
 
-    def __init__(self, production: Production):
-        self._production = production
+    def __init__(self, production: Production | NumericValue) -> None:
+        self._production: Production | NumericValue = production
         unlock(self._production)
         if not isinstance(self._production, Production):
-            self._func = lambda kwargs: self._production
-            self._tree = self._production
-            self._args = set()
+            if isinstance(self._production, int) or \
+            isinstance(self._production, float) or \
+            isinstance(self._production, complex) or \
+            isinstance(self._production, bool):
+                self._func: Callable[[dict], NumericValue] = lambda _: self._production
+                self._tree: NumericValue = self._production
+                self._args: set[str] = set()
         else:
-            self._func = self._production._func
-            self._tree = self._production._tree
-            self._args = set(sorted(list(self._production._args)))
-        self._exp = self._get_exp(self._tree)
+            self._func: Callable[[dict], NumericValue] = self._production._func
+            self._tree: dict | str| NumericValue = self._production._tree
+            self._args: set[str] = self._production._args
+        self._tree_str = self._get_tree_str(self._tree)
         relock(self._production)
     
-    def _subs(self, **kwargs):
-        args = {key for key in kwargs}
+    def _subs(self, **kwargs: dict[str, NumericValue]) -> Expression:
+        args: set[str] = set(kwargs)
         if args != self._args:
             raise ValueError(f'arguments do not match')
-        return Expression(self._func, self._exp, kwargs, self._args, self._tree)
+        return Expression(self._func, self._tree_str, kwargs, self._args, self._tree)
 
     # def _draw(self, range_: tuple):
     #     Draw._drawer._add_func(self, range_)
     
-    def _get_exp(self, tree: dict | str | Any, level=0):
-        tree_type = _get_tree_type(tree)
+    def _get_tree_str(self, tree: dict | str | NumericValue, level: int=0) -> str:
+        tree_type: TreeType = _get_tree_type(tree)
         match tree_type:
-            case 'n||b':
+            case TreeType.NUMERICVALUE:
                 return str(tree)
-            case 'str':
+            case TreeType.STR:
                 return '$' + tree
-            case 'S*':
-                return self._get_func_tree(tree)
-            case 'OVl':
-                self._get_ovl_tree(tree)
-            case 'LORl':
-                return self._get_lor_tree(tree, level)
-            case 'None':
-                return None
+            case TreeType.FUNCTIONTREE:
+                return self._get_func_tree_str(tree)
+            case TreeType.OPERATOR1ETREE:
+                return self._get_ovl_tree_str(tree)
+            case TreeType.OPERATOR2ETREE:
+                return self._get_lor_tree_str(tree, level)
 
-    def _get_func_tree(self, tree):
-        args = []
+    def _get_func_tree_str(self, tree: dict[str, dict | str | NumericValue]) -> str:
+        args: list[str] = []
         for item in tree:
-            if item == 'S': continue
-            args.append(self._get_exp(tree[item]))
-        return f'{tree["S"]}({"".join([item + ", " for item in args if item is not None])[:-2]})'
+            subtree: NumericValue | dict | str = tree[item]
+            arg: str = self._get_tree_str(subtree)
+            if item != 'S':
+                args.append(arg)
+        func_text: str = tree["S"]
+        args_text: str = ''.join((''.join((item, ', ')) for item in args if item)).removesuffix(', ')
+        return f'{func_text}({args_text})'
     
-    def _get_ovl_tree(self, tree):
-        if tree['V'] is None:
-            raise ValueError('Nonetype was given to an OVL tree')
-        return '(' + tree['O'] + self._get_exp(tree['V']) + ')'
+    def _get_ovl_tree_str(self, tree: dict[str, dict | str | NumericValue]) -> str:
+        subtree_str = self._get_tree_str(tree['V'])
+        return ''.join(('(', tree['O'], subtree_str, ')'))
 
-    def _get_lor_tree(self, tree, level):
-        parents = True if level > tree['l'] else False
-        lr_result = {}
-        for item in ['L', 'R']:
-            if tree[item] is None:
-                raise ValueError('Nonetype was given to a LOR tree')
-            lr_result[item] = self._get_exp(tree[item])
-        l_bracket, r_bracket = ('(', ')') if parents else ('', '')
-        return ''.join([l_bracket, lr_result['L'], tree['O'], lr_result['R'], r_bracket])
+    def _get_lor_tree_str(self, tree: dict[str, dict | str | NumericValue], level: int) -> str:
+        use_brackets: bool = True if level > tree['l'] else False
+        l_subtree_str = self._get_tree_str(tree['L'])
+        r_subtree_str = self._get_tree_str(tree['R'])
+        l_filler, r_filler = ('(', ')') if use_brackets else ('', '')
+        return ''.join((l_filler, l_subtree_str, tree['O'], r_subtree_str, r_filler))
 
-    def _curry(self, **kwargs):
-        args = set(tuple(self._args))
-        tree = self._tree_curry(self._tree, kwargs)
+    def _curry(self, **kwargs: dict[str, NumericValue]) -> Formula:
+        args: set[str] = self._args.copy()
+        tree: dict | str | NumericValue = self._tree_curry(self._tree, kwargs)
         for key in kwargs:
             if key not in args:
                 raise ValueError(f'arguments do not match')
             args.remove(key)
 
-        def wapper(kwargs_):
+        def wapper(kwargs_: dict[str, NumericValue]) -> NumericValue:
             for key in kwargs:
                 kwargs_[key] = kwargs[key]
             return self._func(kwargs_)
         
         return Formula(Production(wapper, tree, args))
     
-    def _tree_curry(self, tree: dict | str, kwargs: dict):
-        if type(tree) == str:
-            if kwargs.get(tree, None) is not None:
+    def _tree_curry(self, tree: dict | str, kwargs: dict[str, NumericValue]) -> dict | str | NumericValue:
+        if isinstance(tree, str):
+            if tree in kwargs.keys():
                 return kwargs[tree]
             return tree
-
-        if type(tree.get('S', None)) == str:
-            for key, value in tree.items():
-                if key == 'S': continue
-                if type(value) == str or type(value) == dict:
+        
+        if 'S' in tree.keys():
+            for key in tree:
+                if key != 'S' and isinstance(tree[key], str | dict):
                     tree[key] = self._tree_curry(tree[key], kwargs)
             return tree
         
-        if type(tree['L']) == str or type(tree['L']) == dict:
+        if isinstance(tree['L'], str | dict):
             tree['L'] = self._tree_curry(tree['L'], kwargs)
-        if type(tree['R']) == str or type(tree['R']) == dict:
+        if isinstance(tree['R'], str | dict):
             tree['R'] = self._tree_curry(tree['R'], kwargs)
         return tree
     
-    def _text(self):
-        exp: str = ''
-        for item in self._exp:
-            if item != '$':
-                exp += item
-        return exp
+    def _text(self) -> str:
+        tree_text: str = self._tree_str.replace('$', '')
+        return tree_text
 
-    def __str__(self):
-        return f'<Formula f({"".join([arg + ", " for arg in self._args])[:-2]})={self._text()}>'
+    def __str__(self) -> str:
+        formula_text = self._text()
+        args_text = ''.join((''.join((arg, ', ')) for arg in self._args)).removesuffix(', ')
+        return f'<Formula f({args_text})={formula_text}>'
     
     # functions with 1 element
     def __abs__(self): p = abs(self._production);return Formula(p)
@@ -440,52 +449,73 @@ class _Formula:
 
 class _Expression:
 
-    def __init__(self, func: Callable[[dict], Any], exp: str, kwargs: dict, args: set, tree):
-        self._exp = exp
-        self._kwargs = kwargs
-        self._func = func
-        self._args = args
-        self._tree = self._get_tree(tree, kwargs)
+    def __init__(self, func: Callable[[dict], NumericValue], exp: str, kwargs: dict[str, NumericValue], args: set[str], tree: dict | str | NumericValue) -> None:
+        self._expression_text_with_signs: str = exp
+        self._kwargs: dict[str, NumericValue] = kwargs
+        self._func: Callable[[dict], NumericValue] = func
+        self._args: set[str] = args
+        self._tree: dict | NumericValue = self._tree_subs(tree, kwargs)
 
-    def _value(self):     
+    def _value(self) -> NumericValue:
         return self._func(self._kwargs)
     
-    def _get_tree(self, tree: dict | str | Any, kwargs: dict):
-        tree_type = _get_tree_type(tree)
+    def _tree_subs(self, tree: dict | str | NumericValue, kwargs: dict[str, NumericValue]) -> dict | NumericValue:
+        tree_type: TreeType = _get_tree_type(tree)
         match tree_type:
-            case 'n||b' | 'None':
-                return tree
-            case 'str':
+            case TreeType.NUMERICVALUE:
+                return str(tree)
+            case TreeType.STR:
                 return kwargs.get(tree)
-            case 'S*':
+            case TreeType.FUNCTIONTREE:
                 for item in tree:
-                    if item == 'S': continue
-                    tree[item] = self._get_tree(tree[item], kwargs)
+                    if item != 'S':
+                        tree[item] = self._tree_subs(tree[item], kwargs)
                 return tree
-            case 'OVl':
-                tree['V'] = self._get_tree(tree['V'], kwargs)
+            case TreeType.OPERATOR1ETREE:
+                tree['V'] = self._tree_subs(tree['V'], kwargs)
                 return tree
-            case 'LORl':
-                tree['L'] = self._get_tree(tree['L'], kwargs)
-                tree['R'] = self._get_tree(tree['R'], kwargs)
+            case TreeType.OPERATOR2ETREE:
+                tree['L'] = self._tree_subs(tree['L'], kwargs)
+                tree['R'] = self._tree_subs(tree['R'], kwargs)
                 return tree
 
-    def _text(self):
-        flag = False
-        exp: str = ''
-        for item in self._exp:
-            if flag:
-                k = type(self._kwargs[item]) != complex and self._kwargs[item] < 0
-                exp += ('(' + str(self._kwargs[item]) + ')') if k else str(self._kwargs[item])
-                flag = False
-                continue
-            if item == '$':
-                flag = True
-                continue
-            exp += item
-        return exp
+    def _text(self) -> str:
+        match_arg_sign: bool = False
+        expression_text: str = ''
+        for ch in self._expression_text_with_signs:
+            if match_arg_sign:
+                arg_value: NumericValue = self._kwargs[ch]
+                value_str: str = str(arg_value)
+                is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
+                if is_negative:
+                    value_str = ''.join(('(',  value_str, ')'))
+                expression_text += value_str
+                match_arg_sign = False; continue
+            if ch == '$':
+                match_arg_sign = True; continue
+            expression_text += ch
+        return expression_text
+    
+    def _text(self) -> str:
+        expression_text: str = ''
+        pos = 0
+        while pos < len(self._expression_text_with_signs):
+            char = self._expression_text_with_signs[pos]
+            if char != '$':
+                expression_text += char
+            else:
+                pos += 1
+                char = self._expression_text_with_signs[pos]
+                arg_value: NumericValue = self._kwargs[char]
+                value_str: str = str(arg_value)
+                is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
+                if is_negative:
+                    value_str = ''.join(('(',  value_str, ')'))
+                expression_text += value_str
+            pos += 1
+        return expression_text
 
-    def __str__(self):
+    def __str__(self) -> str:
         fargs = [f'{key}={self._kwargs[key]}, ' for key in self._kwargs]
         return f'<Expression f({"".join(fargs)[:-2]})={self._text()}>'
     

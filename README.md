@@ -4,6 +4,8 @@
 
 ![License](https://img.shields.io/badge/license-MIT-green) ![Language](https://img.shields.io/badge/language-Py3.11-blue) ![Version](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP%2Freleases%2Flatest&query=name&label=version&color=red)  ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP&query=stargazers_count&label=stars&color=yellow)
 
+[简体中文👈👈👈](https://github.com/yuanhang2008/MEP/blob/master/README-cn.md)
+
 ## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/yuanhang2008/MEP.svg)](https://starchart.cc/yuanhang2008/MEP)

@@ -4,6 +4,8 @@
 
 ![许可证](https://img.shields.io/badge/许可证-MIT-green) ![语言](https://img.shields.io/badge/语言-Py3.11-blue) ![版本](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP%2Freleases%2Flatest&query=name&label=版本&color=red)  ![Stars](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fapi.github.com%2Frepos%2Fyuanhang2008%2FMEP&query=stargazers_count&label=Stars&color=yellow)
 
+[English👈👈👈](https://github.com/yuanhang2008/MEP/blob/master/README.md)
+
 ## Stars增长图
 
 [![Stars增长图](https://starchart.cc/yuanhang2008/MEP.svg)](https://starchart.cc/yuanhang2008/MEP)

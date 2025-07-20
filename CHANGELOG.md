@@ -7,9 +7,14 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
+### Added
+
+- Add Safe Mode(It is enabled by default and cannot be changed dynamically) in config.
+
 ### Changed
 
 - Rename function "Math.int" to "Math.toint", "Math.float" to "Math.tofloat".
+- Optimize the check of tree type.
 
 ## [1.1.4] - 2025-7-18
 

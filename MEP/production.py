@@ -39,6 +39,13 @@ class _OperatorMode(Enum):
     FUNCTION1E = 'f1e'
     FUNCTION2E = 'f2e'
 
+class _TreeType(Enum):
+    NUMERICVALUE = 'nfcb' # int | float | complex | bool
+    SYMBOL = 'sym'
+    FUNCTIONTREE = 'S*'
+    OPERATOR1ETREE = 'OVl'
+    OPERATOR2ETREE = 'LORl'
+
 class _Productor:
     
     @staticmethod
@@ -71,7 +78,8 @@ class _Productor:
                 {'math': math, 
                 'func': func}), 
                 {'S': short_name, 'a': tree}, 
-                args)
+                args, 
+                _TreeType.FUNCTIONTREE)
 
     @staticmethod
     def _productfunc2e(func_name: str, value1: '_Production | NumericValue', value2: '_Production | NumericValue', is_productions: list[bool]) -> '_Production':
@@ -85,7 +93,8 @@ class _Productor:
                      'func1': func1, 
                      'func2': func2}), 
                 {'S': short_name, 'a': tree1, 'b': tree2}, 
-                args1 | args2)
+                args1 | args2, 
+                _TreeType.FUNCTIONTREE)
         
         if (not is_productions[0]) and is_productions[1]:
             func2, tree2, args2 = _get_production_attributes(value2)
@@ -95,7 +104,8 @@ class _Productor:
                      'value1': value1, 
                     'func': func2}), 
                 {'S': short_name, 'a': value1, 'b': tree2},
-                args2)
+                args2, 
+                _TreeType.FUNCTIONTREE)
         
         else:
             func1, tree1, args1 = _get_production_attributes(value1)
@@ -105,7 +115,8 @@ class _Productor:
                      'value2': value2, 
                      'func': func1}),
                 {'S': short_name, 'a': tree1, 'b': value2}, 
-                args1)
+                args1, 
+                _TreeType.FUNCTIONTREE)
     
     @staticmethod
     def _product1e(operator: str, value: '_Production', level: int) -> '_Production':
@@ -114,7 +125,8 @@ class _Productor:
             eval(f'lambda kwargs: {operator}func(kwargs)', 
                 {'func': func}), 
                 {'O': operator, 'V': tree, 'l': level}, 
-                args)
+                args, 
+                _TreeType.OPERATOR1ETREE)
 
     @staticmethod
     def _product2e(operator: str, left: '_Production | NumericValue', right: '_Production | NumericValue', is_productions: list[bool], level: int) -> '_Production':
@@ -126,7 +138,8 @@ class _Productor:
                     {'lfunc': lfunc,
                     'rfunc': rfunc}), 
                 {'L': ltree, 'O': operator, 'R': rtree, 'l': level}, 
-                largs | rargs)
+                largs | rargs, 
+                _TreeType.OPERATOR2ETREE)
         
         if (not is_productions[0]) and is_productions[1]:
             rfunc, rtree, rargs = _get_production_attributes(right)
@@ -135,7 +148,8 @@ class _Productor:
                     {'left': left,
                     'func': rfunc}),
                 {'L': left, 'O': operator, 'R': rtree, 'l': level}, 
-                rargs)
+                rargs, 
+                _TreeType.OPERATOR2ETREE)
 
         else:
             lfunc, ltree, largs = _get_production_attributes(left)
@@ -144,15 +158,17 @@ class _Productor:
                     {'func': lfunc,
                     'right': right}),
                 {'L': ltree, 'O': operator, 'R': right, 'l': level}, 
-                largs)
+                largs, 
+                _TreeType.OPERATOR2ETREE)
 
 class _Production:
     
-    def __init__(self, func: Callable[[dict], NumericValue], tree: dict | str | NumericValue, args: set[str]) -> None:
+    def __init__(self, func: Callable[[dict], NumericValue], tree: dict | str | NumericValue, args: set[str], tree_type: _TreeType) -> None:
         self._locked: bool = False
         self._func: Callable[[dict], NumericValue] = func
         self._tree: dict | str | NumericValue = tree
         self._args: set[str] = args
+        self._tree_type = tree_type
         _relock(self)
     
     def __getattribute__(self, __name: str) -> Any | NoReturn:
@@ -233,7 +249,7 @@ class Symbol(_Production):
             raise ValueError(f'{sign} is an invalid sign')
         if sign in symbols:
             raise ValueError(f'Sign {sign} has been defined')
-        super().__init__(lambda kwargs: kwargs[sign], sign, {sign})
+        super().__init__(lambda kwargs: kwargs[sign], sign, {sign}, _TreeType.SYMBOL)
         symbols.add(sign)
         _relock(self)
     

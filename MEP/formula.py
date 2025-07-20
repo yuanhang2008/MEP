@@ -3,35 +3,14 @@
 
 import math
 from typing import Callable, NoReturn
-from enum import Enum
 
 from .config import *
-from .production import _Production, _relock, _unlock, NumericValue
+from .production import _Production, _relock, _unlock, NumericValue, _TreeType
 
 # from.draw import Draw
 
 
 _named_formulas: 'dict[str, Formula]' = {}
-
-class _TreeType(Enum):
-    NUMERICVALUE = 'n||b'
-    STR = 'str'
-    FUNCTIONTREE = 'S*'
-    OPERATOR1ETREE = 'OVl'
-    OPERATOR2ETREE = 'LORl'
-
-def _get_tree_type(tree: NumericValue | dict | str) -> _TreeType:
-        if isinstance(tree, str): 
-            return _TreeType.STR
-        
-        if isinstance(tree, NumericValue): 
-            return _TreeType.NUMERICVALUE
-        
-        if isinstance(tree, dict):
-            if 'S' in set(tree.keys()): return _TreeType.FUNCTIONTREE
-            if set(tree.keys()) == {'O', 'V', 'l'}: return _TreeType.OPERATOR1ETREE
-            if set(tree.keys()) == {'L', 'O', 'R', 'l'}: return _TreeType.OPERATOR2ETREE
-        raise ValueError(f'bad tree was given')
 
 def _name_check(name: str) -> 'Formula | NoReturn':
     formula: Formula | None = _named_formulas.get(name, None)
@@ -51,7 +30,7 @@ def call(name: str, **kwargs) -> 'Expression | NoReturn':
         Expression: Expression after substituting into the formula.
     
     Raises:
-        ValueError: There is no formula that matches the name.
+        ValueError: No such a formula named...
     '''
     formula = _name_check(name)
     return formula.subs(**kwargs)
@@ -67,7 +46,7 @@ def find(name: str) -> 'Formula | NoReturn':
         Formula: Formula that matches the name.
     
     Raises:
-        ValueError: There is no formula that matches the name.
+        ValueError: No such a formula named...
     '''
     formula = _name_check(name)
     return formula
@@ -210,7 +189,7 @@ class Expression:
         tree: The tree structure of formula operations.
 
     Attributes:
-        _fexpression (_Expression): The corresponding unencapsulated object of expression.
+        _expression (_Expression): The corresponding unencapsulated object of expression.
     '''
 
     def __init__(self, func: Callable[[dict], NumericValue], exp: str, kwargs: dict, args: set, tree: dict | str | NumericValue) -> None:
@@ -304,28 +283,31 @@ class _Formula:
                 self._func: Callable[[dict], NumericValue] = lambda _: self._production
                 self._tree: NumericValue = self._production
                 self._args: set[str] = set()
+                self._tree_type: _TreeType = _TreeType.NUMERICVALUE
+            else:
+                raise TypeError(f'Formula() argument must be a Production or NumericValue, not \'{type(production)}\'')
         else:
             self._func: Callable[[dict], NumericValue] = self._production._func
             self._tree: dict | str| NumericValue = self._production._tree
             self._args: set[str] = self._production._args
-        self._tree_str = self._get_tree_str(self._tree)
+            self._tree_type: _TreeType = self._production._tree_type
+        self._tree_str: str = self._get_tree_str(self._tree)
         _relock(self._production)
     
     def _subs(self, **kwargs: dict[str, NumericValue]) -> Expression:
         args: set[str] = set(kwargs)
         if args != self._args:
             raise ValueError(f'arguments do not match')
-        return Expression(self._func, self._tree_str, kwargs, self._args, self._tree)
+        return Expression(self._func, self._tree_str, kwargs, self._args, self._tree, self._tree_type)
 
     # def _draw(self, range_: tuple):
     #     Draw._drawer._add_func(self, range_)
     
     def _get_tree_str(self, tree: dict | str | NumericValue, level: int=0) -> str:
-        tree_type: _TreeType = _get_tree_type(tree)
-        match tree_type:
+        match self._tree_type:
             case _TreeType.NUMERICVALUE:
                 return str(tree)
-            case _TreeType.STR:
+            case _TreeType.SYMBOL:
                 return SIGN_CH + tree
             case _TreeType.FUNCTIONTREE:
                 return self._get_func_tree_str(tree)
@@ -449,22 +431,22 @@ class _Formula:
 
 class _Expression:
 
-    def __init__(self, func: Callable[[dict], NumericValue], exp: str, kwargs: dict[str, NumericValue], args: set[str], tree: dict | str | NumericValue) -> None:
+    def __init__(self, func: Callable[[dict], NumericValue], exp: str, kwargs: dict[str, NumericValue], args: set[str], tree: dict | str | NumericValue, tree_type: _TreeType) -> None:
         self._expression_text_with_signs: str = exp
         self._kwargs: dict[str, NumericValue] = kwargs
         self._func: Callable[[dict], NumericValue] = func
         self._args: set[str] = args
         self._tree: dict | NumericValue = self._tree_subs(tree, kwargs)
+        self._tree_type: _TreeType = tree_type
 
     def _value(self) -> NumericValue:
         return self._func(self._kwargs)
     
     def _tree_subs(self, tree: dict | str | NumericValue, kwargs: dict[str, NumericValue]) -> dict | NumericValue:
-        tree_type: _TreeType = _get_tree_type(tree)
-        match tree_type:
+        match self._tree_type:
             case _TreeType.NUMERICVALUE:
                 return str(tree)
-            case _TreeType.STR:
+            case _TreeType.SYMBOL:
                 return kwargs.get(tree)
             case _TreeType.FUNCTIONTREE:
                 for item in tree:

@@ -158,11 +158,11 @@ class Math:
     log = _Constructor._func_construct_wrapper(cmath.log, 'log')
     fact = _Constructor._func_construct_wrapper(_NewMathFunction.factorial, 'fact')
 
-    # permutation combinations
+    # permutation & combination
     comb = _Constructor._func_construct_wrapper(math.comb, 'comb')
     perm = _Constructor._func_construct_wrapper(math.perm, 'perm')
 
-    # lcg and gcd
+    # lcg & gcd
     lcm = _Constructor._func_construct_wrapper(math.lcm, 'lcg')
     gcd = _Constructor._func_construct_wrapper(math.gcd, 'gcd')
 

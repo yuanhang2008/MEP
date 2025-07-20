@@ -3,29 +3,33 @@
 
 import math
 from string import ascii_letters as letters
-from typing import Callable, TypeAlias
+from typing import Callable, NoReturn, TypeAlias, Any
 from enum import Enum
+
+from config import *
 
 
 NumericValue: TypeAlias = int | float | complex | bool
 symbols: set[str] = set()
 _allows = ['get_sign']
 
-def _unlock(*args: '_Production | NumericValue'):
-    for item in args:
-        if isinstance(item, _Production):
-            item._locked = False
+def _unlock(*args: '_Production | NumericValue') -> None:
+    if SAFE_MODE:
+        for item in args:
+            if isinstance(item, _Production):
+                item._locked = False
 
-def _relock(*args: '_Production | NumericValue'):
-    for item in args:
-        if isinstance(item, _Production):
-            item._locked = True
+def _relock(*args: '_Production | NumericValue') -> None:
+    if SAFE_MODE:
+        for item in args:
+            if isinstance(item, _Production):
+                item._locked = True
 
-def _get_production_attributes(value: '_Production'):
+def _get_production_attributes(value: '_Production') -> tuple[Callable[[dict], NumericValue], NumericValue | dict | str, set[str]]:
     _unlock(value)
-    func = value._func
-    tree = value._tree
-    args = value._args
+    func: Callable[[dict], NumericValue] = value._func
+    tree: NumericValue | dict | str = value._tree
+    args: set[str] = value._args
     _relock(value)
     return func, tree, args
 
@@ -42,7 +46,7 @@ class _Productor:
         value1: '_Production | NumericValue', 
         value2: '_Production | NumericValue | None'=None, 
         level: int | None=None, 
-        mode: _OperatorMode=''):
+        mode: _OperatorMode='') ->' _Production':
 
         match mode:
             case _OperatorMode.OPERATOR1E:
@@ -59,9 +63,9 @@ class _Productor:
                 raise ValueError(f'bad mod {modstr} was given')
     
     @staticmethod
-    def _productfunc1e(func_name: str, value: '_Production'):
+    def _productfunc1e(func_name: str, value: '_Production') -> '_Production':
         func, tree, args = _get_production_attributes(value)
-        short_name = func_name.removeprefix('math.')
+        short_name: str = func_name.removeprefix('math.')
         return _Production(
             eval(f'lambda kwargs: {func_name}(func(kwargs))', 
                 {'math': math, 
@@ -70,8 +74,8 @@ class _Productor:
                 args)
 
     @staticmethod
-    def _productfunc2e(func_name: str, value1: '_Production | NumericValue', value2: '_Production | NumericValue', is_productions: list[bool]):
-        short_name = func_name.removeprefix('math.')
+    def _productfunc2e(func_name: str, value1: '_Production | NumericValue', value2: '_Production | NumericValue', is_productions: list[bool]) -> '_Production':
+        short_name: str = func_name.removeprefix('math.')
         if is_productions[0] and is_productions[1]:
             func1, tree1, args1 = _get_production_attributes(value1)
             func2, tree2, args2 = _get_production_attributes(value2)
@@ -104,7 +108,7 @@ class _Productor:
                 args1)
     
     @staticmethod
-    def _product1e(operator: str, value: '_Production', level: int):
+    def _product1e(operator: str, value: '_Production', level: int) -> '_Production':
         func, tree, args = _get_production_attributes(value)
         return _Production(
             eval(f'lambda kwargs: {operator}func(kwargs)', 
@@ -113,7 +117,7 @@ class _Productor:
                 args)
 
     @staticmethod
-    def _product2e(operator: str, left: '_Production | NumericValue', right: '_Production | NumericValue', is_productions: list[bool], level: int):
+    def _product2e(operator: str, left: '_Production | NumericValue', right: '_Production | NumericValue', is_productions: list[bool], level: int) -> '_Production':
         if is_productions[0] and is_productions[1]:
             lfunc, ltree, largs = _get_production_attributes(left)
             rfunc, rtree, rargs = _get_production_attributes(right)
@@ -144,14 +148,17 @@ class _Productor:
 
 class _Production:
     
-    def __init__(self, func: Callable[[dict], NumericValue], tree: dict | str | NumericValue, args: set[str]):
-        self._locked = True
+    def __init__(self, func: Callable[[dict], NumericValue], tree: dict | str | NumericValue, args: set[str]) -> None:
+        self._locked: bool = False
         self._func: Callable[[dict], NumericValue] = func
         self._tree: dict | str | NumericValue = tree
         self._args: set[str] = args
-
-    def __getattribute__(self, __name: str):
-        if __name in _allows or not super().__getattribute__('_locked'):
+        _relock(self)
+    
+    def __getattribute__(self, __name: str) -> Any | NoReturn:
+        if (__name in _allows) or \
+        (not super().__getattribute__('_locked')) or \
+        (not SAFE_MODE):
             return super().__getattribute__(__name)
         raise AttributeError('cannot access a Production object')
         
@@ -219,10 +226,9 @@ class Symbol(_Production):
         ValueError: The symbol sign is out of A-Z and a-z, or it has been occupied.
     '''
 
-    def __init__(self, sign: str):
-        self._locked: bool = True
+    def __init__(self, sign: str) -> None:
+        self._locked: bool = False
         self._sign: str = sign
-        _unlock(self)
         if not self._check(sign):
             raise ValueError(f'{sign} is an invalid sign')
         if sign in symbols:
@@ -243,12 +249,14 @@ class Symbol(_Production):
         _relock(self)
         return sign
     
-    def __getattribute__(self, __name: str):
-        if __name in _allows or not object.__getattribute__(self, '_locked'):
+    def __getattribute__(self, __name: str) -> Any | NoReturn:
+        if (__name in _allows) or \
+        (not object.__getattribute__(self, '_locked')) or \
+        (not SAFE_MODE):
             return object.__getattribute__(self, __name)
         raise AttributeError('cannot access a Production object')
     
-    def _check(self, sign: str):
+    def _check(self, sign: str) -> bool:
         if len(sign) == 1 and (sign in letters):
             return True
         return False

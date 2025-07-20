@@ -326,7 +326,7 @@ class _Formula:
             case _TreeType.NUMERICVALUE:
                 return str(tree)
             case _TreeType.STR:
-                return '$' + tree
+                return SIGN_CH + tree
             case _TreeType.FUNCTIONTREE:
                 return self._get_func_tree_str(tree)
             case _TreeType.OPERATOR1ETREE:
@@ -390,12 +390,13 @@ class _Formula:
         return tree
     
     def _text(self) -> str:
-        tree_text: str = self._tree_str.replace('$', '')
+        tree_text: str = self._tree_str.replace(SIGN_CH, '')
         return tree_text
 
     def __str__(self) -> str:
         formula_text = self._text()
-        args_text = ''.join((''.join((arg, ', ')) for arg in self._args)).removesuffix(', ')
+        fargs = [f'{arg}, 'for arg in self._args]
+        args_text = ''.join(fargs).removesuffix(', ')
         return f'<Formula f({args_text})={formula_text}>'
     
     # functions with 1 element
@@ -487,10 +488,10 @@ class _Expression:
                 value_str: str = str(arg_value)
                 is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
                 if is_negative:
-                    value_str = ''.join(('(',  value_str, ')'))
+                    value_str = f'({value_str})'
                 expression_text += value_str
                 match_arg_sign = False; continue
-            if ch == '$':
+            if ch == SIGN_CH:
                 match_arg_sign = True; continue
             expression_text += ch
         return expression_text
@@ -500,7 +501,7 @@ class _Expression:
         pos = 0
         while pos < len(self._expression_text_with_signs):
             char = self._expression_text_with_signs[pos]
-            if char != '$':
+            if char != SIGN_CH:
                 expression_text += char
             else:
                 pos += 1
@@ -509,14 +510,15 @@ class _Expression:
                 value_str: str = str(arg_value)
                 is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
                 if is_negative:
-                    value_str = ''.join(('(',  value_str, ')'))
+                    value_str = f'({value_str})'
                 expression_text += value_str
             pos += 1
         return expression_text
 
     def __str__(self) -> str:
         fargs = [f'{key}={self._kwargs[key]}, ' for key in self._kwargs]
-        return f'<Expression f({"".join(fargs)[:-2]})={self._text()}>'
+        args_text = ''.join(fargs).removesuffix(', ')
+        return f'<Expression f({args_text})={self._text()}>'
     
     # unfinished
     # functions with 1 element

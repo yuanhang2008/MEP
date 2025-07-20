@@ -7,7 +7,11 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
-## [1.1.4]
+### Changed
+
+- Rename function "Math.int" to "Math.toint", "Math.float" to "Math.tofloat".
+
+## [1.1.4] - 2025-7-18
 
 ### Added
 
@@ -16,7 +20,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ### Changed
 
-- rename function "get" to "find".
+- Rename function "get" to "find".
 
 ### Fixed
 
@@ -27,7 +31,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 - Remove "auto_install_1.bat" && "auto_install_2.bat". MEP needs to be installed manually now.
 - Remove "draw" feature, but "draw.py" is kept.
 
-## [1.1.3]
+## [1.1.3] - 2023-10-3
 
 ### Added
 
@@ -254,7 +258,8 @@ The first version of MEP released (Versions prior to 0.2.0 are deprecated).
 - ```auto_install.bat``` instead pip.
 - Class ```Formula``` and ```Expression```.
 
-[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.3...HEAD
+[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.4...HEAD
+[1.1.4]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.3...MEP-v1.1.4
 [1.1.3]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.2...MEP-v1.1.3
 [1.1.2]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.1...MEP-v1.1.2
 [1.1.1]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.0...MEP-v1.1.1

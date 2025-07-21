@@ -138,12 +138,34 @@ class Math:
         Args:
             func (Callable): the core of new function.
             name (str): the name of new function.
+        
+        Raises:
+            ValueError:
+                ... is already a function of Math.
         '''
-        exec(f'Math.{name} = newfunc(func, name)', {
-            'Math': Math, 
-            'newfunc': _Constructor._func_construct_wrapper, 
-            'func': func, 
-            'name': name})
+        if name not in Math.__dict__:
+            setattr(Math, name, _Constructor._func_construct_wrapper(func, name))
+        else:
+            raise ValueError(f'{name} is already a function of Math.')
+    
+    @staticmethod
+    def mathfunc(name: str) -> Callable[[Calculable], Calculable]:
+        '''
+        Get a math function by name.
+
+        Args:
+            name (str): the name of function.
+        
+        Returns:
+            Callable: the function that found by name.
+        
+        Raises:
+            ValueError:
+                No such a math function named ...
+        '''
+        if name in Math.__dict__:
+            return Math.__dict__[name]
+        raise ValueError(f'No such a math function named {name}')
 
     # basic
     toint = _Constructor._func_construct_wrapper(int, 'int')

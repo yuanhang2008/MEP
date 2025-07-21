@@ -8,7 +8,7 @@ from string import ascii_lowercase as letters
 from typing import Callable, TypeAlias
 from enum import Enum
 
-from .production import _Production, _relock, _unlock, NumericValue
+from .production import _Production, _relock, _unlock, NumericValue, _Tree
 
 from .formula import Formula
 
@@ -43,24 +43,20 @@ class _Constructor:
 
     @staticmethod
     def _construct_production(func: Callable[[NumericValue], NumericValue], args: tuple[_Production | NumericValue], func_name: str) -> _Production:
-        funcs: dict[int, Callable[[dict], NumericValue]] = {}
-        trees: dict[int, NumericValue | dict | str] = {}
         args_: set[str] = set()
         _unlock(*args)
-        for index, arg in enumerate(args):
+        consructed_func: Callable[[NumericValue], NumericValue] = lambda kwargs: func(
+            *[arg._func(kwargs) if isinstance(arg, _Production) else arg
+            for arg in args])
+
+        func_tree: _Tree._FunctionProductionTree = _Tree._FunctionProductionTree(func_name, 
+            *[arg._tree if isinstance(arg, _Production) else _Tree._NumericProductionTree(arg) 
+            for arg in args])
+        
+        for arg in args:
             if isinstance(arg, _Production):
-                funcs[index] = arg._func
-                trees[index] = arg._tree
                 args_ |= arg._args
         _relock(*args)
-
-        consructed_func: Callable[[NumericValue], NumericValue] = lambda kwargs: func(
-            *[funcs[index](kwargs) if isinstance(arg, _Production) else arg
-            for index, arg in enumerate(args)])
-
-        func_tree: dict[str, dict | str | NumericValue] = {letters[index]: trees[index] if isinstance(arg, _Production) else arg
-            for index, arg in enumerate(args)}
-        func_tree.update({'S': func_name})
 
         return _Production(consructed_func, func_tree, args_)
 

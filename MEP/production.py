@@ -6,7 +6,7 @@ from string import ascii_letters as letters
 from typing import Callable, NoReturn, TypeAlias, Any
 from enum import Enum
 
-from config import *
+from .config import *
 
 
 NumericValue: TypeAlias = int | float | complex | bool
@@ -25,10 +25,10 @@ def _relock(*args: '_Production | NumericValue') -> None:
             if isinstance(item, _Production):
                 item._locked = True
 
-def _get_production_attributes(value: '_Production') -> tuple[Callable[[dict], NumericValue], NumericValue | dict | str, set[str]]:
+def _get_production_attributes(value: '_Production') -> 'tuple[Callable[[dict], NumericValue], _Tree._ProductionTree, set[str]]':
     _unlock(value)
     func: Callable[[dict], NumericValue] = value._func
-    tree: NumericValue | dict | str = value._tree
+    tree: _Tree._ProductionTree = value._tree
     args: set[str] = value._args
     _relock(value)
     return func, tree, args
@@ -39,12 +39,44 @@ class _OperatorMode(Enum):
     FUNCTION1E = 'f1e'
     FUNCTION2E = 'f2e'
 
-class _TreeType(Enum):
-    NUMERICVALUE = 'nfcb' # int | float | complex | bool
-    SYMBOL = 'sym'
-    FUNCTIONTREE = 'S*'
-    OPERATOR1ETREE = 'OVl'
-    OPERATOR2ETREE = 'LORl'
+class _Tree:
+
+    class _ProductionTree:
+
+        def __init__(self, operator: str | None=None, level: int=0) -> None:
+            self._operator: str | None = operator
+            self._level: int = level
+
+    class _NumericProductionTree(_ProductionTree):
+
+        def __init__(self, value: NumericValue) -> None:
+            super().__init__()
+            self._value: NumericValue = value
+
+    class _SymbolProductionTree(_ProductionTree):
+
+        def __init__(self, sign: str) -> None:
+            super().__init__()
+            self._sign: str = sign
+
+    class _FunctionProductionTree(_ProductionTree):
+
+        def __init__(self, operator: str, *args: '_Tree._ProductionTree') -> None:
+            super().__init__(operator)
+            self._args: tuple[_Tree._ProductionTree] = args
+
+    class _OperatorProductionTree1E(_ProductionTree):
+
+        def __init__(self, operator: str, value: '_Tree._ProductionTree', level: int) -> None:
+            super().__init__(operator, level)
+            self._value: _Tree._ProductionTree = value
+
+    class _OperatorProductionTree2E(_ProductionTree):
+
+        def __init__(self, operator: str, value1: '_Tree._ProductionTree', value2: '_Tree._ProductionTree', level: int) -> None:
+            super().__init__(operator, level)
+            self._value1: _Tree._ProductionTree = value1
+            self._value2: _Tree._ProductionTree = value2
 
 class _Productor:
     
@@ -52,7 +84,7 @@ class _Productor:
     def _product(operator: str, 
         value1: '_Production | NumericValue', 
         value2: '_Production | NumericValue | None'=None, 
-        level: int | None=None, 
+        level: int=0, 
         mode: _OperatorMode='') ->' _Production':
 
         match mode:
@@ -77,9 +109,8 @@ class _Productor:
             eval(f'lambda kwargs: {func_name}(func(kwargs))', 
                 {'math': math, 
                 'func': func}), 
-                {'S': short_name, 'a': tree}, 
-                args, 
-                _TreeType.FUNCTIONTREE)
+                _Tree._FunctionProductionTree(short_name, tree), 
+                args)
 
     @staticmethod
     def _productfunc2e(func_name: str, value1: '_Production | NumericValue', value2: '_Production | NumericValue', is_productions: list[bool]) -> '_Production':
@@ -90,33 +121,32 @@ class _Productor:
             return _Production(
                 eval(f'lambda kwargs: {func_name}(func1(kwargs), func2(kwargs))',
                     {'math': math, 
-                     'func1': func1, 
-                     'func2': func2}), 
-                {'S': short_name, 'a': tree1, 'b': tree2}, 
-                args1 | args2, 
-                _TreeType.FUNCTIONTREE)
+                    'func1': func1, 
+                    'func2': func2}), 
+                _Tree._FunctionProductionTree(short_name, tree1, tree2), 
+                args1 | args2)
         
         if (not is_productions[0]) and is_productions[1]:
             func2, tree2, args2 = _get_production_attributes(value2)
+            tree1: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value1)
             return _Production(
                 eval(f'lambda kwargs: {func_name}(value1, func(kwargs))',
                     {'math': math, 
-                     'value1': value1, 
+                    'value1': value1, 
                     'func': func2}), 
-                {'S': short_name, 'a': value1, 'b': tree2},
-                args2, 
-                _TreeType.FUNCTIONTREE)
+                _Tree._FunctionProductionTree(short_name, tree1, tree2),
+                args2)
         
         else:
             func1, tree1, args1 = _get_production_attributes(value1)
+            tree2: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value2)
             return _Production(
                 eval(f'lambda kwargs: {func_name}(func(kwargs), value2)',
                     {'math': math, 
-                     'value2': value2, 
-                     'func': func1}),
-                {'S': short_name, 'a': tree1, 'b': value2}, 
-                args1, 
-                _TreeType.FUNCTIONTREE)
+                    'value2': value2, 
+                    'func': func1}),
+                _Tree._FunctionProductionTree(short_name, tree1, tree2), 
+                args1)
     
     @staticmethod
     def _product1e(operator: str, value: '_Production', level: int) -> '_Production':
@@ -124,9 +154,8 @@ class _Productor:
         return _Production(
             eval(f'lambda kwargs: {operator}func(kwargs)', 
                 {'func': func}), 
-                {'O': operator, 'V': tree, 'l': level}, 
-                args, 
-                _TreeType.OPERATOR1ETREE)
+                _Tree._OperatorProductionTree1E(operator, tree, level), 
+                args)
 
     @staticmethod
     def _product2e(operator: str, left: '_Production | NumericValue', right: '_Production | NumericValue', is_productions: list[bool], level: int) -> '_Production':
@@ -137,38 +166,36 @@ class _Productor:
                 eval(f'lambda kwargs: lfunc(kwargs) {operator} rfunc(kwargs)',
                     {'lfunc': lfunc,
                     'rfunc': rfunc}), 
-                {'L': ltree, 'O': operator, 'R': rtree, 'l': level}, 
-                largs | rargs, 
-                _TreeType.OPERATOR2ETREE)
+                _Tree._OperatorProductionTree2E(operator, ltree, rtree, level), 
+                largs | rargs)
         
         if (not is_productions[0]) and is_productions[1]:
             rfunc, rtree, rargs = _get_production_attributes(right)
+            ltree: _Tree._NumericProductionTree = _Tree._NumericProductionTree(left)
             return _Production(
                 eval(f'lambda kwargs: left {operator} func(kwargs)',
                     {'left': left,
                     'func': rfunc}),
-                {'L': left, 'O': operator, 'R': rtree, 'l': level}, 
-                rargs, 
-                _TreeType.OPERATOR2ETREE)
+                _Tree._OperatorProductionTree2E(operator, ltree, rtree, level), 
+                rargs)
 
         else:
             lfunc, ltree, largs = _get_production_attributes(left)
+            rtree: _Tree._NumericProductionTree = _Tree._NumericProductionTree(right)
             return _Production(
                 eval(f'lambda kwargs: func(kwargs) {operator} right',
                     {'func': lfunc,
                     'right': right}),
-                {'L': ltree, 'O': operator, 'R': right, 'l': level}, 
-                largs, 
-                _TreeType.OPERATOR2ETREE)
+                _Tree._OperatorProductionTree2E(operator, ltree, rtree, level), 
+                largs)
 
 class _Production:
     
-    def __init__(self, func: Callable[[dict], NumericValue], tree: dict | str | NumericValue, args: set[str], tree_type: _TreeType) -> None:
+    def __init__(self, func: Callable[[dict], NumericValue], tree: _Tree._ProductionTree, args: set[str]) -> None:
         self._locked: bool = False
         self._func: Callable[[dict], NumericValue] = func
-        self._tree: dict | str | NumericValue = tree
+        self._tree: _Tree._ProductionTree = tree
         self._args: set[str] = args
-        self._tree_type = tree_type
         _relock(self)
     
     def __getattribute__(self, __name: str) -> Any | NoReturn:
@@ -249,7 +276,8 @@ class Symbol(_Production):
             raise ValueError(f'{sign} is an invalid sign')
         if sign in symbols:
             raise ValueError(f'Sign {sign} has been defined')
-        super().__init__(lambda kwargs: kwargs[sign], sign, {sign}, _TreeType.SYMBOL)
+        tree: _Tree._SymbolProductionTree = _Tree._SymbolProductionTree(sign)
+        super().__init__(lambda kwargs: kwargs[sign], tree, {sign})
         symbols.add(sign)
         _relock(self)
     
@@ -261,7 +289,7 @@ class Symbol(_Production):
             str: The sign of symbol.
         '''
         _unlock(self)
-        sign = self._sign
+        sign: str = self._sign
         _relock(self)
         return sign
     

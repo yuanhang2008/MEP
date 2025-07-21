@@ -17,6 +17,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 - Rename function "Math.int" to "Math.toint", "Math.float" to "Math.tofloat".
 - Change the data structure of the expression tree.
 - Optimize the check of tree type.
+- Support symbol names consisting of letters + numbers.
 
 ### Removed
 
@@ -32,7 +33,6 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 ### Changed
 
 - Rename function "get" to "find".
-- Support symbol names consisting of letters + numbers.
 
 ### Fixed
 

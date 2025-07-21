@@ -14,6 +14,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 ### Changed
 
 - Rename function "Math.int" to "Math.toint", "Math.float" to "Math.tofloat".
+- Change the data structure of the expression tree.
 - Optimize the check of tree type.
 
 ## [1.1.4] - 2025-7-18

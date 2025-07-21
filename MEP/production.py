@@ -2,7 +2,7 @@
 
 
 import math
-from string import ascii_letters as letters
+from string import ascii_letters as letters, digits
 from typing import Callable, NoReturn, TypeAlias, Any
 from enum import Enum
 
@@ -297,6 +297,11 @@ class Symbol(_Production):
         raise AttributeError('cannot access a Production object')
     
     def _check(self, sign: str) -> bool:
-        if len(sign) == 1 and (sign in letters):
-            return True
+        if len(sign) == 0: return False
+        if sign[0] in letters:
+            if (len(sign) > 1 and all([ch in digits for ch in sign[1:]])) or \
+            len(sign) == 1:
+                return True
+            return False
         return False
+        

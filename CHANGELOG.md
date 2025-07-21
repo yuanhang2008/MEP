@@ -32,6 +32,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 ### Changed
 
 - Rename function "get" to "find".
+- Support symbol names consisting of letters + numbers.
 
 ### Fixed
 

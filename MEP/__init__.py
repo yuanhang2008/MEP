@@ -23,7 +23,7 @@ from .formula import Formula, call, find
 
 # from.draw import Draw
 from .math import Math
-from .production import Symbol, symbols
+from .production import Symbol
 
 
 X = Symbol('x')
@@ -36,6 +36,5 @@ __all__ = [
     'call', 
     'find', 
     'Math', 
-    'Symbol', 
-    'symbols'
+    'Symbol'
 ] # removed class Draw

@@ -322,18 +322,18 @@ class _Formula:
             arg: str = self._get_tree_str(subtree, tree._level)
             args.append(arg)
         func_text: str = tree._operator
-        args_text: str = ''.join((''.join((item, ', ')) for item in args if item)).removesuffix(', ')
+        args_text: str = ''.join((f'{item}, ' for item in args if item)).removesuffix(', ')
         return f'{func_text}({args_text})'
     
     def _get_ovl_tree_str(self, tree: _Tree._OperatorProductionTree1E) -> str:
-        value_str = self._get_tree_str(tree._value, tree._level)
-        return ''.join(('(', tree._operator, value_str, ')'))
+        value_str: str = self._get_tree_str(tree._value, tree._level)
+        return f'({tree._operator}{value_str})'
 
     def _get_lor_tree_str(self, tree: _Tree._OperatorProductionTree2E, parent_level: int) -> str:
         l_subtree_str: str = self._get_tree_str(tree._value1, tree._level)
         r_subtree_str: str = self._get_tree_str(tree._value2, tree._level)
         l_filler, r_filler = ('(', ')') if parent_level > tree._level else ('', '')
-        return ''.join((l_filler, l_subtree_str, tree._operator, r_subtree_str, r_filler))
+        return f'{l_filler}{l_subtree_str}{tree._operator}{r_subtree_str}{r_filler}'
 
     def _curry(self, **kwargs: dict[str, NumericValue]) -> Formula:
         args: set[str] = self._args.copy()
@@ -375,9 +375,10 @@ class _Formula:
         return tree_text
 
     def __str__(self) -> str:
-        formula_text = self._text()
-        fargs = [f'{arg}, 'for arg in self._args]
-        args_text = ''.join(fargs).removesuffix(', ')
+        formula_text: str = self._text()
+        args: list[str] = [f'{arg}, 'for arg in self._args]
+
+        args_text = ''.join(args).removesuffix(', ')
         return f'<Formula f({args_text})={formula_text}>'
     
     # functions with 1 element

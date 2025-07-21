@@ -4,7 +4,6 @@
 import cmath
 import math
 import random
-from string import ascii_lowercase as letters
 from typing import Callable, TypeAlias
 from enum import Enum
 
@@ -141,6 +140,7 @@ class Math:
             name (str): the name of new function.
         '''
         exec(f'Math.{name} = newfunc(func, name)', {
+            'Math': Math, 
             'newfunc': _Constructor._func_construct_wrapper, 
             'func': func, 
             'name': name})

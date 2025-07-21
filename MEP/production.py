@@ -10,7 +10,6 @@ from .config import *
 
 
 NumericValue: TypeAlias = int | float | complex | bool
-symbols: set[str] = set()
 _allows = ['get_sign']
 
 def _unlock(*args: '_Production | NumericValue') -> None:
@@ -274,11 +273,8 @@ class Symbol(_Production):
         self._sign: str = sign
         if not self._check(sign):
             raise ValueError(f'{sign} is an invalid sign')
-        if sign in symbols:
-            raise ValueError(f'Sign {sign} has been defined')
         tree: _Tree._SymbolProductionTree = _Tree._SymbolProductionTree(sign)
         super().__init__(lambda kwargs: kwargs[sign], tree, {sign})
-        symbols.add(sign)
         _relock(self)
     
     def get_sign(self) -> str:

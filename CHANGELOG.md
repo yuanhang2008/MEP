@@ -17,6 +17,10 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 - Change the data structure of the expression tree.
 - Optimize the check of tree type.
 
+### Removed
+
+- Removed "symbols".
+
 ## [1.1.4] - 2025-7-18
 
 ### Added

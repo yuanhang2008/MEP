@@ -103,13 +103,14 @@ class _Productor:
     @staticmethod
     def _productfunc1e(func_name: str, value: '_Production') -> '_Production':
         func, tree, args = _get_production_attributes(value)
-        short_name: str = func_name.removeprefix('math.')
-        return _Production(
-            eval(f'lambda kwargs: {func_name}(func(kwargs))', 
-                {'math': math, 
-                'func': func}), 
-                _Tree._FunctionProductionTree(short_name, tree), 
-                args)
+        if func_name.startswith('math.'):
+            short_name: str = func_name.removeprefix('math.')
+            wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+        else:
+            short_name: str = func_name
+            wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+        production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func(kwargs))
+        return _Production(production_func,  _Tree._FunctionProductionTree(short_name, tree), args)
 
     @staticmethod
     def _productfunc2e(func_name: str, value1: '_Production | NumericValue', value2: '_Production | NumericValue', is_productions: list[bool]) -> '_Production':
@@ -117,35 +118,38 @@ class _Productor:
         if is_productions[0] and is_productions[1]:
             func1, tree1, args1 = _get_production_attributes(value1)
             func2, tree2, args2 = _get_production_attributes(value2)
-            return _Production(
-                eval(f'lambda kwargs: {func_name}(func1(kwargs), func2(kwargs))',
-                    {'math': math, 
-                    'func1': func1, 
-                    'func2': func2}), 
-                _Tree._FunctionProductionTree(short_name, tree1, tree2), 
-                args1 | args2)
+            if func_name.startswith('math.'):
+                short_name: str = func_name.removeprefix('math.')
+                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+            else:
+                short_name: str = func_name
+                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+            production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func1(kwargs), func2(kwargs))
+            return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args1 | args2)
         
         if (not is_productions[0]) and is_productions[1]:
             func2, tree2, args2 = _get_production_attributes(value2)
             tree1: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value1)
-            return _Production(
-                eval(f'lambda kwargs: {func_name}(value1, func(kwargs))',
-                    {'math': math, 
-                    'value1': value1, 
-                    'func': func2}), 
-                _Tree._FunctionProductionTree(short_name, tree1, tree2),
-                args2)
+            if func_name.startswith('math.'):
+                short_name: str = func_name.removeprefix('math.')
+                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+            else:
+                short_name: str = func_name
+                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+            production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(value1, func2(kwargs))
+            return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args2)
         
         else:
             func1, tree1, args1 = _get_production_attributes(value1)
             tree2: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value2)
-            return _Production(
-                eval(f'lambda kwargs: {func_name}(func(kwargs), value2)',
-                    {'math': math, 
-                    'value2': value2, 
-                    'func': func1}),
-                _Tree._FunctionProductionTree(short_name, tree1, tree2), 
-                args1)
+            if func_name.startswith('math.'):
+                short_name: str = func_name.removeprefix('math.')
+                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+            else:
+                short_name: str = func_name
+                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+            production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func1(kwargs), value2)
+            return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args1)
     
     @staticmethod
     def _product1e(operator: str, value: '_Production', level: int) -> '_Production':
@@ -259,10 +263,6 @@ class Symbol(_Production):
 
     Args:
         sign (str): The name of symbol.
-
-    Attributes:
-        _locked (bool): The lock that blocks access after new symbols are defined.
-        _sign (str): The name of symbol.
     
     Raises:
         ValueError: The symbol sign is out of A-Z and a-z, or it has been occupied.

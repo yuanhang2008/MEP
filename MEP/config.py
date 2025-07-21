@@ -3,7 +3,8 @@
 
 #formula
 EXPRESSION_MAX_CACH: int = 256
-SIGN_CH: str = '$'
+SIGN_CH_L: str = '$'
+SIGN_CH_R: str = '@'
 
 #production
 SAFE_MODE: bool = True

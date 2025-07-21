@@ -307,7 +307,7 @@ class _Formula:
         if isinstance(tree, _Tree._NumericProductionTree):
             return str(tree._value)
         if isinstance(tree, _Tree._SymbolProductionTree):
-            return SIGN_CH + tree._sign
+            return f'{SIGN_CH_L}{tree._sign}{SIGN_CH_R}'
         if isinstance(tree, _Tree._FunctionProductionTree):
             return self._get_func_tree_str(tree)
         if isinstance(tree, _Tree._OperatorProductionTree1E):
@@ -371,7 +371,7 @@ class _Formula:
         raise ValueError('Bad tree was given.')
     
     def _text(self) -> str:
-        tree_text: str = self._tree_str.replace(SIGN_CH, '')
+        tree_text: str = self._tree_str.replace(SIGN_CH_L, '').replace(SIGN_CH_R, '')
         return tree_text
 
     def __str__(self) -> str:
@@ -458,35 +458,21 @@ class _Expression:
     #             tree['L'] = self._tree_subs(tree['L'], kwargs)
     #             tree['R'] = self._tree_subs(tree['R'], kwargs)
     #             return tree
-
-    def _text(self) -> str:
-        match_arg_sign: bool = False
-        expression_text: str = ''
-        for ch in self._expression_text_with_signs:
-            if match_arg_sign:
-                arg_value: NumericValue = self._kwargs[ch]
-                value_str: str = str(arg_value)
-                is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
-                if is_negative:
-                    value_str = f'({value_str})'
-                expression_text += value_str
-                match_arg_sign = False; continue
-            if ch == SIGN_CH:
-                match_arg_sign = True; continue
-            expression_text += ch
-        return expression_text
     
     def _text(self) -> str:
         expression_text: str = ''
-        pos = 0
+        pos: int = 0
         while pos < len(self._expression_text_with_signs):
             char = self._expression_text_with_signs[pos]
-            if char != SIGN_CH:
+            if char != SIGN_CH_L:
                 expression_text += char
             else:
-                pos += 1
-                char = self._expression_text_with_signs[pos]
-                arg_value: NumericValue = self._kwargs[char]
+                left: int = pos + 1
+                while self._expression_text_with_signs[pos] != SIGN_CH_R:
+                    pos += 1
+                right: int = pos
+                symbol: str = self._expression_text_with_signs[left:right]
+                arg_value: NumericValue = self._kwargs[symbol]
                 value_str: str = str(arg_value)
                 is_negative: bool = (not isinstance(arg_value, complex)) and arg_value < 0
                 if is_negative:

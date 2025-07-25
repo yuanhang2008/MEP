@@ -12,6 +12,7 @@ from .production import _Production, _relock, _unlock, NumericValue, _Tree
 from .formula import Formula
 
 
+Real: TypeAlias = int | float | bool
 Calculable: TypeAlias = _Production | Formula | NumericValue
 
 class _ArgsType(Enum):
@@ -223,7 +224,7 @@ class Math:
     wchoose = _Constructor._func_construct_wrapper(_NewMathFunction.wchoose, 'wchoose')
 
     # complex
-    to_complex = _Constructor._func_construct_wrapper(complex, 'complex')
+    tocomplex = _Constructor._func_construct_wrapper(complex, 'complex')
     real = _Constructor._func_construct_wrapper(lambda x: 0j+x.real, 'real')
     imag = _Constructor._func_construct_wrapper(lambda x: x.imag, 'imag')
     conjugate = _Constructor._func_construct_wrapper(lambda x: x.conjugate(), 'conjugate')
@@ -232,7 +233,7 @@ class Math:
     rect = _Constructor._func_construct_wrapper(cmath.rect, 'rect')
 
     # logic
-    to_bool = _Constructor._func_construct_wrapper(bool, 'bool')
+    tobool = _Constructor._func_construct_wrapper(bool, 'bool')
     logicand = _Constructor._func_construct_wrapper(lambda *args: all(map(bool, args)), 'and')
     logicor = _Constructor._func_construct_wrapper(lambda *args: any(map(bool, args)), 'or')
     logicnot = _Constructor._func_construct_wrapper(lambda x: not bool(x), 'not')

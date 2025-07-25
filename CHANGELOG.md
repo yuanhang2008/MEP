@@ -7,7 +7,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
-## [1.2.0]
+## [1.2.0] - 2025-7-25
 
 ### Added
 

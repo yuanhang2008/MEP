@@ -16,10 +16,10 @@ Features include:
     etc.
 '''
 
-__version__ = '1.1.4'
+__version__ = '1.2.0'
 
 
-from .formula import Formula, call, find
+from .formula import Formula, Expression, call, find
 
 # from.draw import Draw
 from .math import Math
@@ -34,10 +34,11 @@ N = Num = Numeric
 
 __all__ = [
     'X', 'Y', 'Z', 
+    'N', 'Num', 'Numeric', 
     'Formula', 
+    'Expression', 
+    'Symbol', 
+    'Math', 
     'call', 
     'find', 
-    'Math', 
-    'Symbol', 
-    'N', 'Num', 'Numeric'
 ] # removed class Draw

@@ -2,7 +2,7 @@
 
 
 import math
-from typing import Callable, NoReturn
+from typing import Callable, NoReturn, overload
 
 from .config import *
 from .production import _Production, _relock, _unlock, NumericValue, _Tree
@@ -187,18 +187,41 @@ class Expression:
     Mathematical expression for pure numbers.
 
     Args:
-        func (Callable): Function for calculating value.
-        exp (str): Mathematical text.
-        kwargs (dict): arguments that substituting.
-        args (set): argument set of corresponding formula.
-        tree: The tree structure of formula operations.
+        production (_Production): The production of expression.
 
     Attributes:
         _expression (_Expression): The corresponding unencapsulated object of expression.
     '''
 
-    def __init__(self, func: Callable[[dict], NumericValue], exp: str, kwargs: dict[str, NumericValue]) -> None:
-        self._expression = _Expression(func, exp, kwargs)
+    @overload
+    def __init__(self, production: _Production) -> None: ...
+    
+    @overload
+    def __init__(self, _func: Callable[[dict], NumericValue], _exp: str, _kwargs: dict[str, NumericValue]) -> None: ...
+    
+    def __init__(self, production: _Production=None, _func: Callable[[dict], NumericValue]=None, _exp: str=None, _kwargs: dict[str, NumericValue]=None) -> None:
+        if production is None and \
+        _func is not None and \
+        _exp is not None and \
+        _kwargs is not None:
+            self._expression: _Expression = _Expression(_func, _exp, _kwargs)
+        
+        elif production is not None and \
+        _func is None and \
+        _exp is None and \
+        _kwargs is None:
+            _unlock(production)
+            if production._args == set():
+                self._production: _Production = production
+                _func: Callable[[dict], NumericValue] = self._production._func
+                _exp: str = _TreeParser._get_tree_str(self._production._tree)
+                _kwargs: dict[str, NumericValue] = {}
+                self._expression: _Expression = _Expression(_func, _exp, _kwargs)
+            else:
+                raise ValueError('Arguments cannot be carried in expression production.')
+        
+        else:
+            raise ValueError('Unexpected argument(s) in Expression object.')
 
     def value(self) -> NumericValue:
         '''
@@ -226,7 +249,7 @@ class Expression:
             str: a literal value of expression with its arguments of formula and mathematical text.
         '''
         return self._expression.__str__()
-    
+
     # functions with 1 element
     def __abs__(self): return self._expression.__abs__()
     def __floor__(self): return self._expression.__floor__()
@@ -275,6 +298,44 @@ class Expression:
     def __rxor__(self, other): return self._expression.__rxor__(other)
     def __ror__(self, other): return self._expression.__ror__(other)
 
+class _TreeParser:
+
+    @staticmethod
+    def _get_tree_str(tree: _Tree._ProductionTree, parent_level: int=0) -> str:
+        if isinstance(tree, _Tree._NumericProductionTree):
+            return str(tree._value)
+        if isinstance(tree, _Tree._SymbolProductionTree):
+            return f'{SIGN_CH_L}{tree._sign}{SIGN_CH_R}'
+        if isinstance(tree, _Tree._FunctionProductionTree):
+            return _TreeParser._get_func_tree_str(tree)
+        if isinstance(tree, _Tree._OperatorProductionTree1E):
+            return _TreeParser._get_ovl_tree_str(tree)
+        if isinstance(tree, _Tree._OperatorProductionTree2E):
+            return _TreeParser._get_lor_tree_str(tree, parent_level)
+        raise ValueError(f'Bad tree was given')
+
+    @staticmethod
+    def _get_func_tree_str(tree: _Tree._FunctionProductionTree) -> str:
+        args: list[str] = []
+        for subtree in tree._args:
+            arg: str = _TreeParser._get_tree_str(subtree, tree._level)
+            args.append(arg)
+        func_text: str = tree._operator
+        args_text: str = ''.join((f'{item}, ' for item in args if item)).removesuffix(', ')
+        return f'{func_text}({args_text})'
+
+    @staticmethod
+    def _get_ovl_tree_str(tree: _Tree._OperatorProductionTree1E) -> str:
+        value_str: str = _TreeParser._get_tree_str(tree._value, tree._level)
+        return f'({tree._operator}{value_str})'
+
+    @staticmethod
+    def _get_lor_tree_str(tree: _Tree._OperatorProductionTree2E, parent_level: int) -> str:
+        l_subtree_str: str = _TreeParser._get_tree_str(tree._value1, tree._level)
+        r_subtree_str: str = _TreeParser._get_tree_str(tree._value2, tree._level)
+        l_filler, r_filler = ('(', ')') if parent_level > tree._level else ('', '')
+        return f'{l_filler}{l_subtree_str}{tree._operator}{r_subtree_str}{r_filler}'
+
 class _Formula:
 
     def __init__(self, production: _Production | NumericValue) -> None:
@@ -291,49 +352,17 @@ class _Formula:
             self._func: Callable[[dict], NumericValue] = self._production._func
             self._tree: _Tree._ProductionTree = self._production._tree
             self._args: set[str] = self._production._args
-        self._tree_str: str = self._get_tree_str(self._tree)
+        self._tree_str: str = _TreeParser._get_tree_str(self._tree)
         _relock(self._production)
     
     def _subs(self, **kwargs: NumericValue) -> Expression:
         args: set[str] = set(kwargs)
         if args != self._args:
             raise ValueError(f'arguments do not match')
-        return Expression(self._func, self._tree_str, kwargs)
+        return Expression(None, self._func, self._tree_str, kwargs)
 
     # def _draw(self, range_: tuple):
     #     Draw._drawer._add_func(self, range_)
-    
-    def _get_tree_str(self, tree: _Tree._ProductionTree, parent_level: int=0) -> str:
-        if isinstance(tree, _Tree._NumericProductionTree):
-            return str(tree._value)
-        if isinstance(tree, _Tree._SymbolProductionTree):
-            return f'{SIGN_CH_L}{tree._sign}{SIGN_CH_R}'
-        if isinstance(tree, _Tree._FunctionProductionTree):
-            return self._get_func_tree_str(tree)
-        if isinstance(tree, _Tree._OperatorProductionTree1E):
-            return self._get_ovl_tree_str(tree)
-        if isinstance(tree, _Tree._OperatorProductionTree2E):
-            return self._get_lor_tree_str(tree, parent_level)
-        raise ValueError(f'Bad tree was given')
-
-    def _get_func_tree_str(self, tree: _Tree._FunctionProductionTree) -> str:
-        args: list[str] = []
-        for subtree in tree._args:
-            arg: str = self._get_tree_str(subtree, tree._level)
-            args.append(arg)
-        func_text: str = tree._operator
-        args_text: str = ''.join((f'{item}, ' for item in args if item)).removesuffix(', ')
-        return f'{func_text}({args_text})'
-    
-    def _get_ovl_tree_str(self, tree: _Tree._OperatorProductionTree1E) -> str:
-        value_str: str = self._get_tree_str(tree._value, tree._level)
-        return f'({tree._operator}{value_str})'
-
-    def _get_lor_tree_str(self, tree: _Tree._OperatorProductionTree2E, parent_level: int) -> str:
-        l_subtree_str: str = self._get_tree_str(tree._value1, tree._level)
-        r_subtree_str: str = self._get_tree_str(tree._value2, tree._level)
-        l_filler, r_filler = ('(', ')') if parent_level > tree._level else ('', '')
-        return f'{l_filler}{l_subtree_str}{tree._operator}{r_subtree_str}{r_filler}'
 
     def _curry(self, **kwargs: dict[str, NumericValue]) -> Formula:
         args: set[str] = self._args.copy()

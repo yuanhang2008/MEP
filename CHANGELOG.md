@@ -7,11 +7,14 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 ## [unreleased]
 
+## [1.2.0]
+
 ### Added
 
 - Add Safe Mode(It is enabled by default and cannot be changed dynamically) in config.
 - Add "Math.mathfunc" to get a math function by name.
 - Add "Numeric" class to express a constant value in formula.
+- "Expression" can be instantiated by user.
 
 ### Changed
 
@@ -275,7 +278,8 @@ The first version of MEP released (Versions prior to 0.2.0 are deprecated).
 - ```auto_install.bat``` instead pip.
 - Class ```Formula``` and ```Expression```.
 
-[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.4...HEAD
+[unreleased]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.2.0...HEAD
+[1.2.0]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.4...MEP-v1.2.0
 [1.1.4]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.3...MEP-v1.1.4
 [1.1.3]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.2...MEP-v1.1.3
 [1.1.2]: https://github.com/yuanhang2008/MEP/compare/MEP-v1.1.1...MEP-v1.1.2

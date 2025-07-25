@@ -43,21 +43,25 @@ class _Constructor:
     @staticmethod
     def _construct_production(func: Callable[[NumericValue], NumericValue], args: tuple[_Production | NumericValue], func_name: str) -> _Production:
         args_: set[str] = set()
+        funcs: dict[int, Callable[[dict], NumericValue]] = {}
+        trees: dict[int, _Tree._ProductionTree] = {}
         _unlock(*args)
-        consructed_func: Callable[[NumericValue], NumericValue] = lambda kwargs: func(
-            *[arg._func(kwargs) if isinstance(arg, _Production) else arg
-            for arg in args])
+        for index, arg in enumerate(args):
+            if isinstance(arg, _Production):
+                funcs[index] = arg._func
+                trees[index] = arg._tree
+                args_ |= arg._args
+
+        construced_func: Callable[[dict], NumericValue] = lambda kwargs: func(
+            *[f(kwargs) if (f := funcs.get(index)) else args[index]
+            for index in range(len(args))])
 
         func_tree: _Tree._FunctionProductionTree = _Tree._FunctionProductionTree(func_name, 
-            *[arg._tree if isinstance(arg, _Production) else _Tree._NumericProductionTree(arg) 
-            for arg in args])
-        
-        for arg in args:
-            if isinstance(arg, _Production):
-                args_ |= arg._args
+            *[t if (t := trees.get(index)) else _Tree._NumericProductionTree(args[index]) 
+            for index in range(len(args))])
         _relock(*args)
 
-        return _Production(consructed_func, func_tree, args_)
+        return _Production(construced_func, func_tree, args_)
 
     @staticmethod
     def _construct_formula(args: tuple[Calculable], wrapper: Callable[[Calculable], Calculable]) -> Formula:
@@ -170,6 +174,9 @@ class Math:
     # basic
     toint = _Constructor._func_construct_wrapper(int, 'int')
     tofloat = _Constructor._func_construct_wrapper(float, 'float')
+    floor = _Constructor._func_construct_wrapper(math.floor, 'floor')
+    ceil = _Constructor._func_construct_wrapper(math.ceil, 'ceil')
+    trunc = _Constructor._func_construct_wrapper(math.trunc, 'trunc')
     root = _Constructor._func_construct_wrapper(lambda x, y: x ** (1 / y), 'root')
     sqrt = _Constructor._func_construct_wrapper(cmath.sqrt, 'sqrt')
     cbrt = _Constructor._func_construct_wrapper(lambda x: x ** (1 / 3), 'cbrt')

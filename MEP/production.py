@@ -105,10 +105,10 @@ class _Productor:
         func, tree, args = _get_production_attributes(value)
         if func_name.startswith('math.'):
             short_name: str = func_name.removeprefix('math.')
-            wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+            wrapper_func: Callable[[NumericValue], NumericValue] = math.__dict__[short_name]
         else:
             short_name: str = func_name
-            wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+            wrapper_func: Callable[[NumericValue], NumericValue] = __builtins__[short_name]
         production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func(kwargs))
         return _Production(production_func,  _Tree._FunctionProductionTree(short_name, tree), args)
 
@@ -120,10 +120,10 @@ class _Productor:
             func2, tree2, args2 = _get_production_attributes(value2)
             if func_name.startswith('math.'):
                 short_name: str = func_name.removeprefix('math.')
-                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = math.__dict__[short_name]
             else:
                 short_name: str = func_name
-                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = __builtins__[short_name]
             production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func1(kwargs), func2(kwargs))
             return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args1 | args2)
         
@@ -132,10 +132,10 @@ class _Productor:
             tree1: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value1)
             if func_name.startswith('math.'):
                 short_name: str = func_name.removeprefix('math.')
-                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = math.__dict__[short_name]
             else:
                 short_name: str = func_name
-                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = __builtins__[short_name]
             production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(value1, func2(kwargs))
             return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args2)
         
@@ -144,10 +144,10 @@ class _Productor:
             tree2: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value2)
             if func_name.startswith('math.'):
                 short_name: str = func_name.removeprefix('math.')
-                wrapper_func: Callable[[dict], NumericValue] = math.__dict__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = math.__dict__[short_name]
             else:
                 short_name: str = func_name
-                wrapper_func: Callable[[dict], NumericValue] = __builtins__[short_name]
+                wrapper_func: Callable[[NumericValue], NumericValue] = __builtins__[short_name]
             production_func: Callable[[dict], NumericValue] = lambda kwargs: wrapper_func(func1(kwargs), value2)
             return _Production(production_func, _Tree._FunctionProductionTree(short_name, tree1, tree2), args1)
     

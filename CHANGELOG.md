@@ -23,6 +23,10 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 - Removed "symbols".
 
+### Fixed
+
+Math function can produce productions correctly.
+
 ## [1.1.4] - 2025-7-18
 
 ### Added

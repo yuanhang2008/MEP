@@ -10,7 +10,7 @@ from .config import *
 
 
 NumericValue: TypeAlias = int | float | complex | bool
-_allows = ['get_sign']
+_allows = ['get_sign', 'get_value']
 
 def _unlock(*args: '_Production | NumericValue') -> None:
     if SAFE_MODE:
@@ -97,8 +97,8 @@ class _Productor:
             case _OperatorMode.FUNCTION2E:
                 is_pordutions = [isinstance(value1, _Production), isinstance(value2, _Production)]
                 return _Productor._productfunc2e(operator, value1, value2, is_pordutions)
-            case modstr: # Never
-                raise ValueError(f'bad mod {modstr} was given')
+            case error_mode: # Never
+                raise ValueError(f'bad mod {error_mode} was given')
     
     @staticmethod
     def _productfunc1e(func_name: str, value: '_Production') -> '_Production':
@@ -273,8 +273,11 @@ class Symbol(_Production):
         self._sign: str = sign
         if not self._check(sign):
             raise ValueError(f'{sign} is an invalid sign')
+        
+        func: Callable[[dict], NumericValue] = lambda kwargs: kwargs[sign]
         tree: _Tree._SymbolProductionTree = _Tree._SymbolProductionTree(sign)
-        super().__init__(lambda kwargs: kwargs[sign], tree, {sign})
+        args: set[str] = {sign}
+        super().__init__(func, tree, args)
         _relock(self)
     
     def get_sign(self) -> str:
@@ -289,13 +292,6 @@ class Symbol(_Production):
         _relock(self)
         return sign
     
-    def __getattribute__(self, __name: str) -> Any | NoReturn:
-        if (__name in _allows) or \
-        (not object.__getattribute__(self, '_locked')) or \
-        (not SAFE_MODE):
-            return object.__getattribute__(self, __name)
-        raise AttributeError('cannot access a Production object')
-    
     def _check(self, sign: str) -> bool:
         if len(sign) == 0: return False
         if sign[0] in letters:
@@ -305,3 +301,38 @@ class Symbol(_Production):
             return False
         return False
         
+class Numeric(_Production):
+
+    def __init__(self, value: NumericValue) -> None:
+        '''
+        Constant value of formula.
+
+        Args:
+            value (NumericValue): a constant value.
+        '''
+        self._locked: bool = False
+        if not self._check(value):
+            raise TypeError(f'value argument must be an NumericValue, not\'{type(value)}\'')
+        self._value = value
+        func: Callable[[dict], NumericValue] = lambda _: value
+        tree: _Tree._NumericProductionTree = _Tree._NumericProductionTree(value)
+        args: set[str] = set()
+        super().__init__(func, tree, args)
+        _relock(self)
+    
+    def get_value(self) -> NumericValue:
+        '''
+        Return the value of Numeric.
+
+        Returns:
+            str: The value of Numeric.
+        '''
+        _unlock(self)
+        value = self._value
+        _relock(self) 
+        return value
+
+    def _check(self, value: NumericValue) -> bool:
+        if isinstance(value, NumericValue):
+            return True
+        return False

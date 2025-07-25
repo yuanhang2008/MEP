@@ -11,6 +11,7 @@ Note: CHANGELOG was created in version 1.1.0, so change logs in versions that pr
 
 - Add Safe Mode(It is enabled by default and cannot be changed dynamically) in config.
 - Add "Math.mathfunc" to get a math function by name.
+- Add "Numeric" class to express a constant value in formula.
 
 ### Changed
 

@@ -23,12 +23,14 @@ from .formula import Formula, call, find
 
 # from.draw import Draw
 from .math import Math
-from .production import Symbol
+from .production import Symbol, Numeric
 
 
 X = Symbol('x')
 Y = Symbol('y')
 Z = Symbol('z')
+
+N = Num = Numeric
 
 __all__ = [
     'X', 'Y', 'Z', 
@@ -36,5 +38,6 @@ __all__ = [
     'call', 
     'find', 
     'Math', 
-    'Symbol'
+    'Symbol', 
+    'N', 'Num', 'Numeric'
 ] # removed class Draw
